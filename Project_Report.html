@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Report: Digital Twin for Personal Productivity</title>
+    <script type="module">
+        import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs';
+        mermaid.initialize({ startOnLoad: true, theme: 'neutral' });
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Times+New+Roman&display=swap');
+        
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            line-height: 1.5;
+            color: #000;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 40px;
+            background: #fff;
+        }
+
+        h1, h2, h3 {
+            color: #000;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        h1 { margin-bottom: 50px; font-size: 24pt; }
+        h2 { margin-top: 40px; border-bottom: 2px solid #000; padding-bottom: 10px; font-size: 18pt; text-align: left; }
+        h3 { font-size: 14pt; margin-top: 30px; text-align: left; }
+
+        p { text-align: justify; margin-bottom: 15px; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 12pt;
+        }
+
+        th, td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th { background-color: #f0f0f0; }
+
+        .diagram-container {
+            margin: 30px 0;
+            text-align: center;
+            border: 1px solid #ddd;
+            padding: 20px;
+        }
+        
+        .page-break {
+            page-break-after: always;
+        }
+
+        @media print {
+            body { padding: 0; }
+            .diagram-container { border: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Project Abstract<br>Digital Twin for Personal Productivity</h1>
+
+    <h3>Project Abstract</h3>
+    <p>
+        The "Digital Twin for Personal Productivity" is a software system designed to model and optimize the user's daily academic and professional life. By creating a digital counterpart of the user, the system tracks routines, sleep patterns, study habits, and productivity metrics. It leverages data analytics to provide actionable insights, enabling users to balance their "Student" and "Professional" roles effectively. The system facilitates goal setting, routine management, and performance tracking, acting as a comprehensive tool for self-improvement and time management.
+    </p>
+
+    <div class="page-break"></div>
+
+    <h2>1. Database Structure</h2>
+
+    <p><strong>TABLE NAME: users</strong><br>
+    Description: Stores the personal details and authentication credentials of the system users.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl no</th>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>user_id</td>
+                <td>ObjectId</td>
+                <td>Primary Key. Unique identifier for the user.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>name</td>
+                <td>VARCHAR(100)</td>
+                <td>Full name of the user.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>email</td>
+                <td>VARCHAR(150)</td>
+                <td>Unique email address for login.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>role</td>
+                <td>ENUM</td>
+                <td>User role ('Student' or 'Professional').</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>TABLE NAME: routines</strong><br>
+    Description: Stores daily activity logs including sleep, study, and screen time metrics.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl no</th>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>routine_id</td>
+                <td>ObjectId</td>
+                <td>Primary Key. Unique identifier for the routine entry.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>user_id</td>
+                <td>ObjectId</td>
+                <td>Foreign Key referencing users table.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>sleep_hours</td>
+                <td>FLOAT</td>
+                <td>Number of hours slept.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>study_hours</td>
+                <td>FLOAT</td>
+                <td>Number of hours spent studying.</td>
+            </tr>
+            <tr>
+                <td>5</td>
+                <td>screen_time</td>
+                <td>FLOAT</td>
+                <td>Hours of screen usage.</td>
+            </tr>
+             <tr>
+                <td>6</td>
+                <td>mood</td>
+                <td>INT</td>
+                <td>Self-reported mood rating (1-5).</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <p><strong>TABLE NAME: productivity_scores</strong><br>
+    Description: Stores the calculated productivity scores based on routine data.</p>
+    <table>
+        <thead>
+            <tr>
+                <th>Sl no</th>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>score_id</td>
+                <td>ObjectId</td>
+                <td>Primary Key.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>user_id</td>
+                <td>ObjectId</td>
+                <td>Foreign Key referencing users table.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>score</td>
+                <td>INT</td>
+                <td>Calculated productivity score.</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>date</td>
+                <td>DATETIME</td>
+                <td>Date of the score calculation.</td>
+            </tr>
+        </tbody>
+    </table>
+    
+    <p><strong>TABLE NAME: goals</strong><br>
+    Description: Stores specific academic or professional goals set by the user.</p>
+    <table>
+         <thead>
+            <tr>
+                <th>Sl no</th>
+                <th>Field</th>
+                <th>Type</th>
+                <th>Description</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>goal_id</td>
+                <td>ObjectId</td>
+                <td>Primary Key.</td>
+            </tr>
+            <tr>
+                <td>2</td>
+                <td>user_id</td>
+                <td>ObjectId</td>
+                <td>Foreign Key referencing users table.</td>
+            </tr>
+            <tr>
+                <td>3</td>
+                <td>category_id</td>
+                <td>ObjectId</td>
+                <td>Foreign Key referencing categories (Shared Core).</td>
+            </tr>
+            <tr>
+                <td>4</td>
+                <td>target_date</td>
+                <td>DATE</td>
+                <td>Deadline for the goal.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="page-break"></div>
+
+    <h2>2. Entity Relationship (ER) Diagram</h2>
+    <p><em>Model: Chen ER Model Pattern</em></p>
+    
+    <div class="diagram-container">
+        <pre class="mermaid">
+        erDiagram
+            USER {
+                string user_id PK
+                string name
+                string email
+            }
+            ROUTINE {
+                string routine_id PK
+                float sleep_hours
+                float study_hours
+                string user_id FK
+                string category_id FK
+            }
+            GOAL {
+                string goal_id PK
+                string title
+                date deadline
+                string user_id FK
+                string category_id FK
+            }
+            SCORE {
+                string score_id PK
+                int value
+                date date
+                string user_id FK
+                string category_id FK
+            }
+            CATEGORY {
+                string category_id PK
+                string name
+                int priority
+            }
+            DOMAIN {
+                string domain_id PK
+                string name
+            }
+
+            USER ||--o{ ROUTINE : logs
+            USER ||--o{ GOAL : sets
+            USER ||--o{ SCORE : achieves
+            
+            ROUTINE }|--|| CATEGORY : relates_to
+            GOAL }|--|| CATEGORY : relates_to
+            SCORE }|--|| CATEGORY : relates_to
+
+            CATEGORY }|--|| DOMAIN : classified_as
+        </pre>
+    </div>
+
+    <div class="page-break"></div>
+
+    <h2>3. Data Flow Diagrams (DFD)</h2>
+
+    <h3>Level 0: Context Diagram</h3>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        flowchart TB
+            ST[External Entity: Student]
+            PR[External Entity: Professional]
+            AD[External Entity: Admin]
+            SYS((Digital Twin System))
+
+            ST <-->|Request/Response| SYS
+            PR <-->|Request/Response| SYS
+            AD <-->|Request/Response| SYS
+        </pre>
+    </div>
+
+    <h3>Level 1: Student User Module</h3>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        flowchart LR
+            ST[Student] --> LOGIN((Login Process))
+            LOGIN --> PROC1((Manage Routine))
+            LOGIN --> PROC2((Track Goals))
+            LOGIN --> PROC3((View Analytics))
+
+            PROC1 <--> DB1[(Routines Store)]
+            PROC2 <--> DB2[(Goals Store)]
+            PROC3 <--> DB3[(Scores Store)]
+        </pre>
+    </div>
+
+    <h3>Level 1.2: Professional User Module</h3>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        flowchart LR
+            PR[Professional] --> LOGIN((Login Process))
+            LOGIN --> PROC1((Log Work Hours))
+            LOGIN --> PROC2((View Productivity))
+
+            PROC1 <--> DB1[(Routines Store)]
+            PROC2 <--> DB2[(Scores Store)]
+        </pre>
+    </div>
+
+    <h3>Level 1.3: Admin Module</h3>
+    <div class="diagram-container">
+        <pre class="mermaid">
+        flowchart LR
+            AD[Admin] --> LOGIN((Login Process))
+            LOGIN --> PROC1((Manage Users))
+            LOGIN --> PROC2((System Config))
+
+            PROC1 <--> DB1[(User Store)]
+            PROC2 <--> DB2[(Config Store)]
+        </pre>
+    </div>
+
+</body>
+</html>

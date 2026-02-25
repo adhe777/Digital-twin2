@@ -1,0 +1,50 @@
+@import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --color-primary: #6366f1;
+  --color-primary-dark: #4f46e5;
+  --color-secondary: #10b981;
+  --color-accent: #8b5cf6;
+  --color-surface: #ffffff;
+  --color-surface-dark: #0f172a;
+
+  --font-sans: "Outfit", "Inter", system-ui, sans-serif;
+
+  --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+@layer base {
+  html {
+    @apply bg-slate-50 dark:bg-[#020617];
+  }
+
+  body {
+    @apply bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 font-sans antialiased;
+  }
+}
+
+.glass-card {
+  @apply bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl border border-white/20 dark:border-slate-800/50 shadow-premium rounded-3xl transition-all duration-300;
+}
+
+.glass-morphism {
+  @apply bg-white/10 dark:bg-black/20 backdrop-blur-md border border-white/10 dark:border-white/5 shadow-glass;
+}
+
+.gradient-text {
+  @apply bg-clip-text text-transparent bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 font-extrabold;
+}
+
+.card-hover {
+  @apply hover:scale-[1.02] hover:shadow-2xl transition-all duration-300;
+}
+
+.btn-primary {
+  @apply px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-2xl shadow-lg shadow-indigo-500/30 transform active:scale-95 transition-all duration-200;
+}
+
+.input-modern {
+  @apply w-full px-4 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all;
+}
