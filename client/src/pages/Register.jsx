@@ -28,7 +28,7 @@ const Register = ({ setAuth }) => {
             setAuth(true);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.msg || 'Registration failed. System capacity reached?');
+            setError(err.response?.data?.msg || 'Registration failed. Please try again.');
         } finally {
             setIsLoading(false);
         }
@@ -44,10 +44,10 @@ const Register = ({ setAuth }) => {
                         <Activity className="h-8 w-8 text-white" />
                     </div>
                     <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                        Initialize your <span className="gradient-text">Twin</span>
+                        Create Your <span className="gradient-text">Twin</span>
                     </h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                        Begin your journey into digital behavioral synchronization.
+                        Sign up to build your healthy habits.
                     </p>
                 </div>
 
@@ -64,7 +64,7 @@ const Register = ({ setAuth }) => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-4">
                                 <div className="group">
-                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Identity</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                                     <div className="relative">
                                         <User className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                                         <input
@@ -72,14 +72,14 @@ const Register = ({ setAuth }) => {
                                             type="text"
                                             required
                                             className="input-modern px-12"
-                                            placeholder="Subject Name"
+                                            placeholder="Your Name"
                                             value={name}
                                             onChange={onChange}
                                         />
                                     </div>
                                 </div>
                                 <div className="group">
-                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Node</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email</label>
                                     <div className="relative">
                                         <Mail className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                                         <input
@@ -87,14 +87,14 @@ const Register = ({ setAuth }) => {
                                             type="email"
                                             required
                                             className="input-modern px-12"
-                                            placeholder="Subject Email"
+                                            placeholder="name@example.com"
                                             value={email}
                                             onChange={onChange}
                                         />
                                     </div>
                                 </div>
                                 <div className="group">
-                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Access Phrase</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
                                     <div className="relative">
                                         <Lock className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                                         <input
@@ -113,7 +113,7 @@ const Register = ({ setAuth }) => {
                             {/* Behavioral Configuration Side */}
                             <div className="space-y-6">
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Operational Role</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Role</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${role === 'Student' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 shadow-md transform scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}>
                                             <input type="radio" name="role" value="Student" checked={role === 'Student'} onChange={onChange} className="sr-only" />
@@ -129,7 +129,7 @@ const Register = ({ setAuth }) => {
                                 </div>
 
                                 <div>
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Biological Profile</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Gender</label>
                                     <div className="grid grid-cols-2 gap-3">
                                         <label className={`cursor-pointer border-b-4 p-3 flex items-center justify-center gap-2 transition-all rounded-xl ${gender === 'Male' ? 'border-indigo-600 bg-slate-50 dark:bg-slate-800 text-indigo-600 font-bold' : 'border-transparent text-slate-400 italic font-medium'}`}>
                                             <input type="radio" name="gender" value="Male" checked={gender === 'Male'} onChange={onChange} className="sr-only" />
@@ -149,17 +149,17 @@ const Register = ({ setAuth }) => {
                             disabled={isLoading}
                             className="w-full flex justify-center items-center gap-2 py-5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all disabled:opacity-50"
                         >
-                            {isLoading ? 'Creating Twin...' : (
-                                <>Initialize System <ArrowRight className="w-4 h-4" /></>
+                            {isLoading ? 'Creating Account...' : (
+                                <>Create Account <ArrowRight className="w-4 h-4" /></>
                             )}
                         </button>
                     </form>
 
                     <div className="mt-10 text-center border-t border-slate-100 dark:border-slate-800 pt-8">
                         <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
-                            Already synchronized?{' '}
+                            Already have an account?{' '}
                             <Link to="/login" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Command Center Login
+                                Login here
                             </Link>
                         </p>
                     </div>

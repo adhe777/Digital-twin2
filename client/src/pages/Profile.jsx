@@ -57,7 +57,7 @@ const Profile = () => {
                 }
             };
             await api.put('/auth/profile', submissionData);
-            toast.success('System Synchronization Successful');
+            toast.success('Profile Updated Successfully');
             if (formData.preferences.theme === 'dark') {
                 document.documentElement.classList.add('dark');
             } else {
@@ -71,17 +71,17 @@ const Profile = () => {
     const handlePasswordSubmit = async (e) => {
         e.preventDefault();
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            return toast.error('Secret Key mismatch');
+            return toast.error('Passwords do not match');
         }
         try {
             await api.post('/auth/change-password', {
                 oldPassword: passwordData.oldPassword,
                 newPassword: passwordData.newPassword
             });
-            toast.success('Secret Key Updated');
+            toast.success('Password Updated');
             setPasswordData({ oldPassword: '', newPassword: '', confirmPassword: '' });
         } catch (err) {
-            toast.error(err.response?.data?.msg || 'Re-authentication required');
+            toast.error(err.response?.data?.msg || 'Please log in again');
         }
     };
 
@@ -93,13 +93,13 @@ const Profile = () => {
 
     if (!user) return (
         <div className="max-w-4xl mx-auto pt-32 text-center">
-            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic">Session Desynchronized</h2>
-            <p className="text-slate-500 mt-2">Authentication required to access this reality node.</p>
+            <h2 className="text-2xl font-black text-slate-900 dark:text-white uppercase italic">Session Expired</h2>
+            <p className="text-slate-500 mt-2">Please log in to view your profile.</p>
             <button
                 onClick={() => navigate('/login')}
                 className="mt-6 btn-primary px-8 py-3 rounded-2xl font-black uppercase tracking-widest text-xs"
             >
-                Re-authenticate
+                Log In Again
             </button>
         </div>
     );
@@ -121,17 +121,17 @@ const Profile = () => {
                 </div>
                 <div className="text-center md:text-left flex-1">
                     <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">
-                        {user.name} <span className="text-indigo-600 not-italic">Identity</span>
+                        {user.name}'s <span className="text-indigo-600 not-italic">Profile</span>
                     </h2>
                     <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm mt-1">
-                        {user.role} &bull; Verified Node
+                        {user.role} &bull; Verified Account
                     </p>
                     <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
                         <span className="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
                             <Mail className="w-3.5 h-3.5" /> {user.email}
                         </span>
                         <span className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2 border border-indigo-100 dark:border-indigo-800/50">
-                            <CheckCircle className="w-3.5 h-3.5" /> Active Sync
+                            <CheckCircle className="w-3.5 h-3.5" /> Active
                         </span>
                     </div>
                 </div>
@@ -142,19 +142,19 @@ const Profile = () => {
                 <div className="space-y-6">
                     <div className="glass-card p-2">
                         <button className="w-full flex items-center gap-3 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-500/20 font-black uppercase tracking-widest text-xs italic">
-                            <Settings className="w-4 h-4" /> Configuration
+                            <Settings className="w-4 h-4" /> Settings
                         </button>
                     </div>
 
                     <div className="glass-card p-6 border-l-4 border-indigo-500">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Twin Intelligence</h4>
+                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Activity History</h4>
                         <div className="space-y-4">
                             <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                                <span className="text-xs font-bold text-slate-500">Behavior History</span>
+                                <span className="text-xs font-bold text-slate-500">Logged Habits</span>
                                 <span className="text-xs font-black text-indigo-600">30 DAYS</span>
                             </div>
                             <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                                <span className="text-xs font-bold text-slate-500">Prediction Accuracy</span>
+                                <span className="text-xs font-bold text-slate-500">Consistency Score</span>
                                 <span className="text-xs font-black text-emerald-600">94.2%</span>
                             </div>
                         </div>
@@ -167,13 +167,13 @@ const Profile = () => {
                     <section className="glass-card p-8 border-t-4 border-indigo-500">
                         <div className="flex items-center gap-3 mb-8">
                             <UserCircle className="w-6 h-6 text-indigo-500" />
-                            <h3 className="text-xl font-black italic tracking-tight uppercase">User <span className="text-indigo-600 not-italic">Configuration</span></h3>
+                            <h3 className="text-xl font-black italic tracking-tight uppercase">Profile <span className="text-indigo-600 not-italic">Settings</span></h3>
                         </div>
 
                         <form onSubmit={handleProfileSubmit} className="space-y-8">
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Alias</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Name</label>
                                     <input
                                         type="text"
                                         value={formData.name}
@@ -182,25 +182,25 @@ const Profile = () => {
                                     />
                                 </div>
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Gender Sync</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Gender</label>
                                     <select
                                         value={formData.gender}
                                         onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
                                         className="input-modern"
                                     >
-                                        <option value="Male">Male Identity</option>
-                                        <option value="Female">Female Identity</option>
+                                        <option value="Male">Male</option>
+                                        <option value="Female">Female</option>
                                     </select>
                                 </div>
                             </div>
 
                             <div className="space-y-6">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <Palette className="w-3.5 h-3.5" /> Environmental Preferences
+                                    <Palette className="w-3.5 h-3.5" /> App Preferences
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Interface Theme</span>
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Theme</span>
                                         <div className="flex bg-white dark:bg-slate-700 p-1 rounded-xl shadow-inner">
                                             <button
                                                 type="button"
@@ -219,7 +219,7 @@ const Profile = () => {
                                         </div>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Character Motion</span>
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Animations</span>
                                         <button
                                             type="button"
                                             onClick={() => setFormData({ ...formData, preferences: { ...formData.preferences, animations: !formData.preferences.animations } })}
@@ -235,25 +235,25 @@ const Profile = () => {
                             <div className="space-y-6 pt-4">
                                 <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                     {isStudent ? <GraduationCap className="w-3.5 h-3.5" /> : <Briefcase className="w-3.5 h-3.5" />}
-                                    Target Behavioral Metrics
+                                    Goal Settings
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                     {isStudent ? (
                                         <>
                                             <div className="group">
-                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Primary Study Window</label>
+                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Primary Study Time</label>
                                                 <select
                                                     value={formData.studentSettings.preferredStudyTime}
                                                     onChange={(e) => setFormData({ ...formData, studentSettings: { ...formData.studentSettings, preferredStudyTime: e.target.value } })}
                                                     className="input-modern"
                                                 >
-                                                    <option value="Morning">Alpha (Morning)</option>
-                                                    <option value="Afternoon">Beta (Afternoon)</option>
-                                                    <option value="Night">Gamma (Night)</option>
+                                                    <option value="Morning">Morning</option>
+                                                    <option value="Afternoon">Afternoon</option>
+                                                    <option value="Night">Night</option>
                                                 </select>
                                             </div>
                                             <div className="group">
-                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Daily Study Intensity (HR)</label>
+                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Daily Study Goal (Hours)</label>
                                                 <input
                                                     type="number"
                                                     min="1" max="15"
@@ -266,7 +266,7 @@ const Profile = () => {
                                     ) : (
                                         <>
                                             <div className="group">
-                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Operational Hours</label>
+                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Work Hours Per Day</label>
                                                 <input
                                                     type="number"
                                                     value={formData.professionalSettings.workHoursPerDay}
@@ -275,15 +275,15 @@ const Profile = () => {
                                                 />
                                             </div>
                                             <div className="group">
-                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Cognitive Focus</label>
+                                                <label className="block text-xs font-black text-slate-400 mb-2 uppercase tracking-widest pl-1">Focus Level</label>
                                                 <select
                                                     value={formData.professionalSettings.focusLevel}
                                                     onChange={(e) => setFormData({ ...formData, professionalSettings: { ...formData.professionalSettings, focusLevel: e.target.value } })}
                                                     className="input-modern"
                                                 >
-                                                    <option value="Low">Low Density</option>
-                                                    <option value="Medium">Medium Density</option>
-                                                    <option value="High">High Density</option>
+                                                    <option value="Low">Low</option>
+                                                    <option value="Medium">Medium</option>
+                                                    <option value="High">High</option>
                                                 </select>
                                             </div>
                                         </>
@@ -293,7 +293,7 @@ const Profile = () => {
 
                             <button type="submit" className="w-full btn-primary py-4 rounded-3xl flex items-center justify-center gap-3">
                                 <Save className="w-5 h-5" />
-                                <span className="uppercase tracking-[0.2em] font-black text-sm italic">Synchronize Profile</span>
+                                <span className="uppercase tracking-[0.2em] font-black text-sm italic">Save Changes</span>
                             </button>
                         </form>
                     </section>
@@ -305,12 +305,12 @@ const Profile = () => {
                         </div>
                         <div className="flex items-center gap-3 mb-8">
                             <Shield className="w-6 h-6 text-rose-500" />
-                            <h3 className="text-xl font-black italic tracking-tight uppercase">Access <span className="text-rose-500 not-italic">Security</span></h3>
+                            <h3 className="text-xl font-black italic tracking-tight uppercase">Password <span className="text-rose-500 not-italic">Settings</span></h3>
                         </div>
 
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
                             <div className="group">
-                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Current Secret Phrase</label>
+                                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Current Password</label>
                                 <input
                                     type="password"
                                     required
@@ -321,7 +321,7 @@ const Profile = () => {
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">New Phrase</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">New Password</label>
                                     <input
                                         type="password"
                                         required
@@ -331,7 +331,7 @@ const Profile = () => {
                                     />
                                 </div>
                                 <div className="group">
-                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Confirm Identity</label>
+                                    <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Confirm Password</label>
                                     <input
                                         type="password"
                                         required
@@ -342,7 +342,7 @@ const Profile = () => {
                                 </div>
                             </div>
                             <button type="submit" className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest text-[10px] italic rounded-2xl shadow-lg shadow-rose-500/20 transition-all active:scale-95">
-                                Update Credentials
+                                Update Password
                             </button>
                         </form>
                     </section>

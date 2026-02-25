@@ -41,7 +41,7 @@ const Login = ({ setAuth }) => {
                         Welcome <span className="gradient-text">Back</span>
                     </h2>
                     <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                        Log in to synchronize with your Digital Twin.
+                        Log in to your Productivity Twin.
                     </p>
                 </div>
 
@@ -56,7 +56,7 @@ const Login = ({ setAuth }) => {
                     <form className="space-y-6" onSubmit={onSubmit}>
                         <div className="space-y-4">
                             <div className="relative group">
-                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email Terminal</label>
+                                <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email</label>
                                 <div className="relative">
                                     <Mail className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
                                     <input
@@ -73,7 +73,7 @@ const Login = ({ setAuth }) => {
 
                             <div className="relative group">
                                 <div className="flex justify-between items-center mb-2 ml-1">
-                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Secret Key</label>
+                                    <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Password</label>
                                     <Link to="#" className="text-[10px] font-black text-indigo-500 uppercase hover:underline">Lost access?</Link>
                                 </div>
                                 <div className="relative">
@@ -96,8 +96,8 @@ const Login = ({ setAuth }) => {
                             disabled={isLoading}
                             className="w-full flex justify-center items-center gap-2 py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
                         >
-                            {isLoading ? 'Decrypting...' : (
-                                <>Access Twin <ArrowRight className="w-4 h-4" /></>
+                            {isLoading ? 'Logging in...' : (
+                                <>Login <ArrowRight className="w-4 h-4" /></>
                             )}
                         </button>
                     </form>
@@ -106,7 +106,7 @@ const Login = ({ setAuth }) => {
                         <p className="text-sm font-bold text-slate-500 dark:text-slate-400">
                             New to the future?{' '}
                             <Link to="/register" className="text-indigo-600 dark:text-indigo-400 hover:underline">
-                                Register Identity
+                                Create Account
                             </Link>
                         </p>
                     </div>

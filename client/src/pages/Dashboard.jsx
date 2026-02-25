@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
@@ -91,6 +91,27 @@ const Dashboard = () => {
     const isStudent = userRole?.toLowerCase() === 'student';
     const studyStreak = logs.length > 0 ? logs.filter(l => l.studyHours > 0).length : 0; // Simplified streak check
 
+    const assistantMessage = useMemo(() => {
+        if (!logs.length) return isStudent ? "I'm here to help you optimize your study session." : "Ready to assist with your productivity workflow.";
+
+        const latest = logs[0];
+        const prod = Math.max(0, (latest.studyHours * 10) - (latest.screenTime * 2) + (latest.sleepHours * 2));
+        const sleep = latest.sleepHours;
+        const burnoutRisk = analysis?.burnout_risk || 'Low';
+
+        const weekLogs = logs.slice(0, 7);
+        const sleepMean = weekLogs.reduce((a, b) => a + b.sleepHours, 0) / (weekLogs.length || 1);
+        const sleepVar = weekLogs.reduce((a, b) => a + Math.pow(b.sleepHours - sleepMean, 2), 0) / (weekLogs.length || 1);
+        const consistency = sleepVar < 1.5 ? 'Consistent' : 'Irregular';
+
+        if (prod >= 80) return isStudent ? "Excellent academic momentum! Your focus levels are peak." : "Outstanding output today. You're exceeding all KPIs.";
+        if (burnoutRisk === 'High') return isStudent ? "Your energy levels are critically low. Prioritize rest over extra study." : "Burnout risk detected. Recommend shifting to low-intensity tasks.";
+        if (sleep < 6) return isStudent ? "Sleep deprivation alert. Your cognitive retention will suffer." : "Rest deficit noted. Short-term productivity may be compromised.";
+        if (consistency === 'Consistent') return isStudent ? "Great consistency! Your study habit is solidifying." : "Strong operational consistency. Keep this sustainable pace.";
+
+        return isStudent ? "I'm here to help you optimize your study session." : "Ready to assist with your productivity workflow.";
+    }, [logs, analysis, isStudent]);
+
     const downloadReport = () => {
         // ... (simplified download logic)
         alert('Downloading your weekly insights...');
@@ -104,7 +125,7 @@ const Dashboard = () => {
                 <div>
                     <div className="flex items-center gap-3 mb-2">
                         <span className="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-xs font-bold rounded-full border border-indigo-500/20">
-                            {isStudent ? 'ACADEMIC MODE' : 'PROFESSIONAL MODE'}
+                            {isStudent ? 'STUDENT' : 'PROFESSIONAL'}
                         </span>
                         {isStudent && (
                             <div className="flex items-center gap-1.5 text-orange-500">
@@ -114,10 +135,10 @@ const Dashboard = () => {
                         )}
                     </div>
                     <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
-                        Your Digital <span className="gradient-text">Twin</span>
+                        Your <span className="gradient-text">Productivity Twin</span>
                     </h1>
                     <p className="text-slate-500 dark:text-slate-400 mt-1 font-medium italic">
-                        Real-time productivity & burnout risk analysis.
+                        Track your habits. Improve daily.
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
@@ -147,21 +168,24 @@ const Dashboard = () => {
                             sleep={logs.length > 0 ? logs[0].sleepHours : 8}
                             productivity={logs.length > 0 ? Math.max(0, (logs[0].studyHours * 10) - (logs[0].screenTime * 2) + (logs[0].sleepHours * 2)) : 70}
                             isTalking={isTalking}
-                            className="scale-125 mb-4"
+                            className="scale-110 mb-4"
                         />
-                        <div className="text-center mt-6 space-y-2">
-                            <h3 className="text-lg font-extrabold text-slate-900 dark:text-white leading-none">
-                                {isTalking ? 'Analyzing Reality...' : logs.length > 0 ? 'Reality Synchronized' : 'Awaiting Data'}
-                            </h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400 font-medium px-4">
-                                {isTalking ? "Your twin is processing your latest habits..." : logs.length > 0 ? "You're doing great. Stay consistent." : "Log your first routine to start the twin."}
-                            </p>
+                        <div className="text-center mt-6 w-full px-4">
+                            <div className="bg-white/50 dark:bg-slate-800/50 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/20 shadow-sm relative">
+                                <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-slate-50 dark:bg-[#020617] border-t border-l border-indigo-100 dark:border-indigo-500/20 rotate-45" />
+                                <h3 className="text-sm font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest mb-1">
+                                    {isTalking ? 'Analyzing progress...' : 'Twin Insight'}
+                                </h3>
+                                <p className="text-sm font-medium text-slate-700 dark:text-slate-200 italic leading-relaxed">
+                                    "{assistantMessage}"
+                                </p>
+                            </div>
                         </div>
                     </div>
                     <div className="bg-slate-50/80 dark:bg-slate-800/80 p-4 border-t border-slate-100 dark:border-slate-700/50 backdrop-blur-md">
                         <div className="flex justify-between items-center text-[10px] font-black uppercase tracking-widest text-slate-400">
                             <span>Mood Timeline</span>
-                            <span className="text-indigo-600">Sync Active</span>
+                            <span className="text-indigo-600">Active</span>
                         </div>
                         <div className="flex justify-between mt-3 px-2">
                             {logs.slice(0, 7).map((log, i) => (
@@ -178,7 +202,7 @@ const Dashboard = () => {
                         <div className="absolute -right-4 -top-4 bg-indigo-500/5 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500" />
                         <div className="flex justify-between items-start z-10">
                             <div>
-                                <p className="text-xs font-black text-indigo-500 uppercase tracking-widest mb-1">Health Index</p>
+                                <p className="text-xs font-black text-indigo-500 uppercase tracking-widest mb-1">Daily Score</p>
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 italic">{isStudent ? 'Focus Score' : 'Performance'}</h3>
                             </div>
                             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl">
@@ -203,7 +227,7 @@ const Dashboard = () => {
                         <div className="absolute -right-4 -top-4 bg-rose-500/5 w-24 h-24 rounded-full group-hover:scale-150 transition-transform duration-500" />
                         <div className="flex justify-between items-start z-10">
                             <div>
-                                <p className="text-xs font-black text-rose-500 uppercase tracking-widest mb-1">Strain Level</p>
+                                <p className="text-xs font-black text-rose-500 uppercase tracking-widest mb-1">Stress Level</p>
                                 <h3 className="text-xl font-bold text-slate-800 dark:text-slate-100 italic">{isStudent ? 'Exam Readiness' : 'Burnout Risk'}</h3>
                             </div>
                             <div className="p-3 bg-rose-50 dark:bg-rose-900/30 rounded-2xl">
@@ -241,8 +265,8 @@ const Dashboard = () => {
                                     <Brain className="w-6 h-6 text-emerald-600" />
                                 </div>
                                 <div className="flex-1">
-                                    <p className="text-xs font-bold text-slate-400 uppercase">Twin Awareness</p>
-                                    <p className="text-sm font-extrabold text-slate-900 dark:text-white">Synched Status</p>
+                                    <p className="text-xs font-bold text-slate-400 uppercase">Progress</p>
+                                    <p className="text-sm font-extrabold text-slate-900 dark:text-white">Goal Completion</p>
                                 </div>
                             </div>
                             <div className="w-12 h-12 relative flex items-center justify-center">
@@ -264,8 +288,8 @@ const Dashboard = () => {
                 <div className="lg:col-span-7 glass-card p-8 min-h-[450px] flex flex-col">
                     <div className="flex items-center justify-between mb-8">
                         <div>
-                            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">Weekly <span className="text-indigo-600 not-italic">Vitals</span></h3>
-                            <p className="text-xs font-bold text-slate-400">Activity synchronization across last 7 days</p>
+                            <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight uppercase italic">Weekly <span className="text-indigo-600 not-italic">Overview</span></h3>
+                            <p className="text-xs font-bold text-slate-400">Habits logged over the last 7 days</p>
                         </div>
                         <div className="flex gap-2">
                             <div className="flex items-center gap-1.5 text-[10px] font-black uppercase text-indigo-500">
@@ -307,8 +331,8 @@ const Dashboard = () => {
                     <div className="bg-indigo-600 p-8 text-white relative h-32 flex items-center shrink-0">
                         <Sparkles className="absolute right-6 top-6 w-12 h-12 opacity-20" />
                         <div>
-                            <h3 className="text-2xl font-black italic tracking-tight leading-tight">AI PREDICTIONS</h3>
-                            <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest mt-1 opacity-80">Behavioral Recommendations</p>
+                            <h3 className="text-2xl font-black italic tracking-tight leading-tight">PERSONALIZED TIPS</h3>
+                            <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest mt-1 opacity-80">Suggestions from your Twin</p>
                         </div>
                     </div>
                     <div className="p-8 flex-1 overflow-y-auto space-y-6">
@@ -328,7 +352,7 @@ const Dashboard = () => {
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-center space-y-4 opacity-50">
                                 <Clock className="w-12 h-12 text-slate-300" />
-                                <p className="text-sm font-bold text-slate-400">Recording behavioral patterns... <br /> Check back after your next sync.</p>
+                                <p className="text-sm font-bold text-slate-400">Analyzing your habits... <br /> Check back after logging more data.</p>
                             </div>
                         )}
                     </div>
@@ -342,9 +366,9 @@ const Dashboard = () => {
                         <Clock className="w-5 h-5 text-indigo-500" />
                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Consistency</h4>
                     </div>
-                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Sleep Variability</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Sleep Routine</p>
                     <div className="mt-2 text-sm font-bold text-indigo-600 px-3 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl inline-block">
-                        LOW VARIANCE
+                        STEADY
                     </div>
                 </div>
 
@@ -353,9 +377,9 @@ const Dashboard = () => {
                         <TrendingUp className="w-5 h-5 text-emerald-500" />
                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Trend</h4>
                     </div>
-                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Weekly Momentum</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Weekly Progress</p>
                     <div className="mt-2 text-sm font-bold text-emerald-600 px-3 py-1 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl inline-block">
-                        POSITIVE SLOPE
+                        IMPROVING
                     </div>
                 </div>
 
@@ -364,8 +388,8 @@ const Dashboard = () => {
                         <Zap className="w-5 h-5 text-rose-500" />
                         <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Correlation</h4>
                     </div>
-                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Mood Factor</p>
-                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase italic leading-tight">Screen time correlates with mood dips</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Mood Impact</p>
+                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase italic leading-tight">Note: High screen time may reduce mood</p>
                 </div>
 
                 <div className="glass-card p-6 border-b-4 border-amber-400 card-hover relative group">
@@ -374,10 +398,10 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center gap-3 mb-3">
                         <AlertCircle className="w-5 h-5 text-amber-500" />
-                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Sync Alert</h4>
+                        <h4 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none">Reminder</h4>
                     </div>
-                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Fresh Twin Sync</p>
-                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase italic leading-tight">Logging due in 4 hours</p>
+                    <p className="text-lg font-black text-slate-900 dark:text-white italic">Log Your Habits</p>
+                    <p className="mt-2 text-[10px] font-bold text-slate-400 uppercase italic leading-tight">Time to log for today</p>
                 </div>
             </div>
         </div>

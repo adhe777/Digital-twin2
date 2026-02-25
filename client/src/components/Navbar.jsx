@@ -21,8 +21,8 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
 
     const navLinks = [
         { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-        { name: 'Log Data', path: '/input', icon: PlusCircle },
-        { name: 'Simulation', path: '/simulation', icon: BrainCircuit },
+        { name: 'Add Habits', path: '/input', icon: PlusCircle },
+        { name: 'Twin Vision', path: '/simulation', icon: BrainCircuit },
         { name: 'Profile', path: '/profile', icon: User },
     ];
 
@@ -49,8 +49,8 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
                                         key={link.path}
                                         to={link.path}
                                         className={`flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${isActive(link.path)
-                                                ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
-                                                : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
+                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
                                             }`}
                                     >
                                         <link.icon className={`w-4 h-4 mr-2 ${isActive(link.path) ? 'animate-pulse' : ''}`} />
@@ -106,8 +106,8 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
                                 to={link.path}
                                 onClick={() => setIsMobileMenuOpen(false)}
                                 className={`flex items-center px-4 py-4 rounded-2xl text-base font-bold transition-all ${isActive(link.path)
-                                        ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
-                                        : 'text-slate-500 dark:text-slate-400'
+                                    ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400'
+                                    : 'text-slate-500 dark:text-slate-400'
                                     }`}
                             >
                                 <link.icon className="w-5 h-5 mr-3" />

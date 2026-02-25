@@ -9,7 +9,6 @@ import InputData from './pages/InputData';
 import Simulation from './pages/Simulation';
 import Profile from './pages/Profile';
 import api from './utils/api';
-import FloatingAssistant from './components/FloatingAssistant';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -74,7 +73,6 @@ function App() {
             <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
           </Routes>
         </div>
-        {isAuthenticated && <FloatingAssistant />}
       </div>
     </Router>
   );
