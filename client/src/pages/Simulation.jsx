@@ -67,33 +67,35 @@ const Simulation = () => {
         <div className="max-w-6xl mx-auto pt-28 pb-12 px-4 space-y-10 animate-in fade-in slide-in-from-bottom-6 duration-700">
 
             {/* Simulation Header */}
-            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 animate-fade-in-up">
                 <div>
-                    <div className="flex items-center gap-2 mb-3">
-                        <span className="px-3 py-1 bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] font-black rounded-full border border-indigo-500/20 uppercase tracking-widest">
+                    <div className="flex items-center gap-3 mb-3">
+                        <span className="px-4 py-1.5 bg-[#4F8CFF]/10 text-[#4F8CFF] text-[10px] font-black rounded-full border border-[#4F8CFF]/20 uppercase tracking-widest">
                             Predictive Engine Alpha
                         </span>
                     </div>
-                    <h1 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">
-                        Behavioral <span className="text-indigo-600 not-italic">Simulation</span>
+                    <h1 className="text-5xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">
+                        Behavioral <span className="gradient-text">Simulation</span>
                     </h1>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">Model custom routine changes to visualize future performance shifts.</p>
+                    <p className="text-slate-500 dark:text-slate-400 mt-3 font-medium text-lg">Model custom routine changes to visualize future performance shifts.</p>
                 </div>
                 <button
                     onClick={reset}
-                    className="flex items-center gap-2 px-6 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-all"
+                    className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-500 hover:text-[#4F8CFF] hover:border-[#4F8CFF] transition-all shadow-sm"
                 >
-                    <RefreshCw className="w-3.5 h-3.5" /> Reset Model
+                    <RefreshCw className="w-4 h-4" /> Reset Model
                 </button>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
 
                 {/* Control Panel */}
-                <div className="lg:col-span-5 glass-card p-8 border-t-4 border-indigo-500 flex flex-col">
-                    <div className="flex items-center gap-3 mb-8">
-                        <Activity className="w-5 h-5 text-indigo-600" />
-                        <h3 className="text-lg font-black italic uppercase tracking-tight">Parameter <span className="text-indigo-600 not-italic">Input</span></h3>
+                <div className="lg:col-span-12 xl:col-span-5 glass-card p-10 border-t-[6px] border-[#4F8CFF] flex flex-col animate-fade-in-up [animation-delay:0.1s]">
+                    <div className="flex items-center gap-4 mb-10">
+                        <div className="p-3 bg-[#4F8CFF]/10 rounded-2xl">
+                            <Activity className="w-8 h-8 text-[#4F8CFF]" />
+                        </div>
+                        <h3 className="text-2xl font-black italic uppercase tracking-tight">Parameter <span className="gradient-text">Input</span></h3>
                     </div>
 
                     <div className="space-y-8 flex-1">
@@ -106,12 +108,12 @@ const Simulation = () => {
                     <button
                         onClick={runSimulation}
                         disabled={isSimulating}
-                        className="mt-10 w-full py-5 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-[0.2em] text-xs italic rounded-2xl shadow-xl shadow-indigo-500/30 transform active:scale-95 transition-all flex items-center justify-center gap-3"
+                        className="mt-12 w-full btn-primary py-5 rounded-[24px] flex items-center justify-center gap-4 text-base italic"
                     >
                         {isSimulating ? (
-                            <RefreshCw className="w-4 h-4 animate-spin" />
+                            <RefreshCw className="w-6 h-6 animate-spin" />
                         ) : (
-                            <><ArrowRight className="w-4 h-4" /> Run Projection</>
+                            <><ArrowRight className="w-6 h-6" /> Run Projection Engine</>
                         )}
                     </button>
                 </div>
@@ -128,10 +130,10 @@ const Simulation = () => {
                         </div>
                     ) : (
                         <div className="flex-1 flex flex-col animate-in fade-in duration-500">
-                            <div className="bg-indigo-600 p-10 text-white relative overflow-hidden">
-                                <Sparkles className="absolute right-0 top-0 w-32 h-32 opacity-10 -rotate-12 translate-x-8 -translate-y-8" />
-                                <h3 className="text-3xl font-black italic tracking-tight mb-1 uppercase">Model <span className="text-indigo-200 not-italic">Results</span></h3>
-                                <p className="text-[10px] font-black uppercase tracking-[0.2em] text-indigo-100 opacity-80">Behavioral Prediction Output</p>
+                            <div className="bg-gradient-to-r from-[#4F8CFF] to-[#8A6CFF] p-12 text-white relative overflow-hidden">
+                                <Sparkles className="absolute right-0 top-0 w-40 h-40 opacity-10 -rotate-12 translate-x-10 -translate-y-10" />
+                                <h3 className="text-4xl font-black italic tracking-tight mb-2 uppercase">Model <span className="text-[#E0E7FF] not-italic">Insights</span></h3>
+                                <p className="text-[10px] font-black uppercase tracking-[0.3em] text-[#E0E7FF] opacity-80">Behavioral Prediction Output Alpha</p>
                             </div>
 
                             <div className="p-10 flex-1 space-y-10">

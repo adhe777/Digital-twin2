@@ -48,8 +48,8 @@ router.post('/register', async (req, res) => {
             }
         );
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server error');
+        console.error("REGISTER ERROR:", err);
+        res.status(500).json({ msg: 'Server error', error: err.message, stack: err.stack });
     }
 });
 
@@ -163,8 +163,8 @@ router.get('/me', auth, async (req, res) => {
         }
         res.json(user);
     } catch (err) {
-        console.error(err.message);
-        res.status(500).send('Server Error');
+        console.error("AUTH ME ERROR:", err);
+        res.status(500).json({ success: false, message: 'Server Error: ' + err.message, stack: err.stack });
     }
 });
 

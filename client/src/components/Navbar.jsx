@@ -1,8 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Activity, LayoutDashboard, LogOut, PlusCircle, BrainCircuit, Sun, Moon, User, Menu, X } from 'lucide-react';
+import { Activity, LayoutDashboard, LogOut, PlusCircle, BrainCircuit, Sun, Moon, User, Menu, X, ShieldCheck } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
-const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
+const Navbar = ({ isAuthenticated, user, onLogout, darkMode, toggleTheme }) => {
     const navigate = useNavigate();
     const location = useLocation();
     const [isScrolled, setIsScrolled] = useState(false);
@@ -26,6 +26,10 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
         { name: 'Profile', path: '/profile', icon: User },
     ];
 
+    if (user?.isAdmin) {
+        navLinks.push({ name: 'Admin', path: '/admin', icon: ShieldCheck });
+    }
+
     const isActive = (path) => location.pathname === path;
 
     return (
@@ -34,11 +38,11 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
                 <div className="flex justify-between items-center h-16">
                     <div className="flex items-center gap-8">
                         <Link to="/" className="flex items-center group">
-                            <div className="p-2 bg-indigo-600 rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-indigo-500/30">
+                            <div className="p-2 bg-gradient-to-br from-[#4F8CFF] to-[#8A6CFF] rounded-xl group-hover:rotate-12 transition-transform duration-300 shadow-lg shadow-[#4F8CFF]/20">
                                 <Activity className="h-6 w-6 text-white" />
                             </div>
                             <span className="ml-3 text-2xl font-black tracking-tight text-slate-900 dark:text-white uppercase italic">
-                                Digital <span className="text-indigo-600 dark:text-indigo-400 not-italic">Twin</span>
+                                Digital <span className="gradient-text not-italic">Twin</span>
                             </span>
                         </Link>
 
@@ -49,11 +53,11 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
                                         key={link.path}
                                         to={link.path}
                                         className={`flex items-center px-4 py-2 rounded-xl text-sm font-bold transition-all duration-200 ${isActive(link.path)
-                                            ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-indigo-400 shadow-sm'
+                                            ? 'bg-white dark:bg-slate-700 text-[#4F8CFF] dark:text-[#8A6CFF] shadow-sm'
                                             : 'text-slate-500 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white hover:bg-white/50 dark:hover:bg-slate-700/50'
                                             }`}
                                     >
-                                        <link.icon className={`w-4 h-4 mr-2 ${isActive(link.path) ? 'animate-pulse' : ''}`} />
+                                        <link.icon className={`w-4 h-4 mr-2 ${isActive(link.path) ? 'opacity-100' : 'opacity-60'}`} />
                                         {link.name}
                                     </Link>
                                 ))}
@@ -88,7 +92,7 @@ const Navbar = ({ isAuthenticated, onLogout, darkMode, toggleTheme }) => {
                             </div>
                         ) : (
                             <div className="flex items-center gap-4">
-                                <Link to="/login" className="text-slate-600 dark:text-slate-300 hover:text-indigo-600 dark:hover:text-indigo-400 font-bold text-sm transition-colors">Login</Link>
+                                <Link to="/login" className="text-slate-600 dark:text-slate-300 hover:text-[#4F8CFF] font-bold text-sm transition-colors">Login</Link>
                                 <Link to="/register" className="btn-primary py-2 px-6 rounded-xl text-sm">Join Now</Link>
                             </div>
                         )}

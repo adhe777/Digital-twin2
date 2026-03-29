@@ -54,11 +54,12 @@ def run_simulation(req: SimulationRequest):
 @app.post("/recommend")
 def get_recommendations(data: RoutineData):
     try:
-        model = genai.GenerativeModel('gemini-2.5-flash')
+        model = genai.GenerativeModel('gemini-1.5-flash')
         score = calculate_productivity(data)
         
         # Use the role provided in the request, ensuring it's valid
-        role = data.role.upper() if data.role and data.role.upper() in ["STUDENT", "PROFESSIONAL"] else "STUDENT"
+        role_raw = data.role or "Student"
+        role = role_raw.upper() if role_raw.upper() in ["STUDENT", "PROFESSIONAL"] else "STUDENT"
         
         prompt = f"""
         SYSTEM CONSTRAINT (IMPORTANT):
@@ -97,40 +98,63 @@ def get_recommendations(data: RoutineData):
         - Do NOT mention exams, grades, or study habits.
         
         ANALYSIS OBJECTIVES:
-        - Identify productivity patterns
-        - Detect inefficiencies in routine
-        - Identify early burnout risk (non-medical)
-        - Encourage sustainable productivity habits
+        - Identify productivity patterns and provide a friendly, supportive daily insight.
         
         OUTPUT FORMAT (MANDATORY):
-        Return the response in the following structure:
+        Return ONLY a 2–3 line message.
+        Tone: Friendly and supportive.
+        No headers, no bullet points, just the message.
         
-        [Brief Insight]
-        - One sentence summary tailored strictly to the role.
-        
-        [Key Observation]
-        - Highlight one specific data point (e.g., "Great consistency in sleep" or "Study hours dipped yesterday").
-        
-        [Actionable Recommendations]
-        - 2–3 practical, role-specific suggestions.
-        - For STUDENTS: Suggest study techniques (Pomodoro, active recall) or relaxation.
-        - For PROFESSIONALS: Suggest blocking distractions, breaks, or boundary setting.
-        
-        [Motivation/Tip]
-        - A short, positive closing remark.
+        Example Output:
+        "You performed well today, but your sleep is low. Try getting at least 7 hours to improve focus."
         
         STYLE RULES:
         - Professional yet warm for students; Efficient for professionals.
         - Clear and concise language.
         - No emojis.
-        - No diagnoses or predictions.
-        - No content unrelated to the given role.
         """
         response = model.generate_content(prompt)
-        return {"recommendations": response.text}
+        # Safe text extraction
+        rec_text = response.text if response and hasattr(response, 'text') else "AI Service Unavailable. Tip: Focus on consistent sleep and study hours."
+        return {"recommendations": rec_text}
     except Exception as e:
         print(f"GENERATION ERROR: {str(e)}")
         return {"recommendations": "AI Service Unavailable. Tip: Sleep more and study consistent hours."}
+
+class ChatRequest(BaseModel):
+    message: str
+    data: RoutineData
+
+@app.post("/chat")
+def chat_with_twin(req: ChatRequest):
+    try:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        # Safer role extraction
+        role_raw = req.data.role or "Student"
+        role = role_raw.upper() if role_raw.upper() in ["STUDENT", "PROFESSIONAL"] else "STUDENT"
+        
+        context_prompt = f"""
+        You are "Aura", the User's Digital Twin Assistant.
+        Role: {role}
+        Current User Data:
+        - Sleep: {req.data.sleepHours}h
+        - Study/Work: {req.data.studyHours}h
+        - Screen Time: {req.data.screenTime}h
+        - Mood: {req.data.mood}/5
+        
+        TASK:
+        Provide direct, factual, and data-driven answers based ONLY on the provided stats.
+        If the user asks about their performance, refer to the exact numbers above.
+        Be helpful and concise (under 2 sentences). Avoid generic conversational filler.
+        """
+        
+        response = model.generate_content([context_prompt, req.message])
+        # Safe text extraction
+        chat_response = response.text if response and hasattr(response, 'text') else "I'm having trouble processing that right now. Let's try again in a moment."
+        return {"response": chat_response}
+    except Exception as e:
+        print(f"CHAT ERROR: {str(e)}")
+        return {"response": "I'm having trouble connecting to my brain right now, but I'm still here for you!"}
 
 if __name__ == "__main__":
     import uvicorn

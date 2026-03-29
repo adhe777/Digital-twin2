@@ -26,9 +26,10 @@ app.use((req, res, next) => {
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/routines', require('./routes/routines'));
+app.use('/api/admin', require('./routes/admin'));
 
 app.get('/ping', (req, res) => res.send('pong'));
 
-const PORT = 5002;
+const PORT = process.env.PORT || 5004;
 
 app.listen(PORT, '0.0.0.0', () => console.log(`Server started on port ${PORT} at 0.0.0.0`));

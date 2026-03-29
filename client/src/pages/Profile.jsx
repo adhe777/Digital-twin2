@@ -9,7 +9,7 @@ const Profile = () => {
     const [formData, setFormData] = useState({
         name: '',
         gender: '',
-        preferences: { theme: 'light', animations: true },
+        preferences: { theme: 'light', animations: true, fitnessEnabled: false },
         studentSettings: { preferredStudyTime: 'Morning', studyGoal: 4 },
         professionalSettings: { workHoursPerDay: 8, focusLevel: 'Medium' }
     });
@@ -31,15 +31,31 @@ const Profile = () => {
             setFormData({
                 name: res.data.name,
                 gender: res.data.gender,
-                preferences: res.data.preferences || { theme: 'light', animations: true },
+                preferences: res.data.preferences || { theme: 'light', animations: true, fitnessEnabled: false },
                 studentSettings: res.data.studentSettings || { preferredStudyTime: 'Morning', studyGoal: 4 },
                 professionalSettings: res.data.professionalSettings || { workHoursPerDay: 8, focusLevel: 'Medium' }
             });
             setLoading(false);
         } catch (err) {
-            toast.error('Failed to load profile');
+            console.error("Profile Fetch Error:", err);
+            toast.error(err.response?.data?.message || 'Failed to load profile');
             setLoading(false);
         }
+    };
+
+    const [showFitnessWarning, setShowFitnessWarning] = useState(false);
+
+    const handleFitnessToggle = () => {
+        if (formData.preferences.fitnessEnabled) {
+            setShowFitnessWarning(true);
+        } else {
+            setFormData({ ...formData, preferences: { ...formData.preferences, fitnessEnabled: true } });
+        }
+    };
+
+    const confirmDisableFitness = () => {
+        setFormData({ ...formData, preferences: { ...formData.preferences, fitnessEnabled: false } });
+        setShowFitnessWarning(false);
     };
 
     const handleProfileSubmit = async (e) => {
@@ -110,52 +126,59 @@ const Profile = () => {
         <div className="max-w-6xl mx-auto pt-28 pb-12 px-4 space-y-12 animate-in fade-in slide-in-from-bottom-6 duration-700">
 
             {/* Profile Header */}
-            <div className="flex flex-col md:flex-row items-center gap-8 bg-white dark:bg-slate-900/50 p-8 rounded-3xl border border-slate-100 dark:border-slate-800 shadow-xl">
+            <div className="flex flex-col md:flex-row items-center gap-10 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-10 rounded-[32px] shadow-xl animate-fade-in-up">
                 <div className="relative group">
-                    <div className="w-32 h-32 bg-indigo-600 rounded-[2.5rem] flex items-center justify-center shadow-2xl shadow-indigo-500/40 transform group-hover:rotate-6 transition-transform">
-                        <User className="w-16 h-16 text-white" />
+                    <div className="w-40 h-40 bg-gradient-to-br from-[#4F8CFF] to-[#8A6CFF] rounded-[40px] flex items-center justify-center shadow-2xl shadow-[#4F8CFF]/30 transform group-hover:scale-105 transition-all duration-500">
+                        <User className="w-20 h-20 text-white" />
                     </div>
-                    <div className="absolute -bottom-2 -right-2 p-2 bg-emerald-500 text-white rounded-xl shadow-lg">
-                        <Shield className="w-4 h-4" />
+                    <div className="absolute -bottom-2 -right-2 p-3 bg-[#22C55E] text-white rounded-2xl shadow-lg border-4 border-white dark:border-slate-900">
+                        <Shield className="w-5 h-5" />
                     </div>
                 </div>
                 <div className="text-center md:text-left flex-1">
-                    <h2 className="text-4xl font-black text-slate-900 dark:text-white tracking-tight italic uppercase">
-                        {user.name}'s <span className="text-indigo-600 not-italic">Profile</span>
-                    </h2>
-                    <p className="text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm mt-1">
-                        {user.role} &bull; Verified Account
+                    <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
+                        <h2 className="text-5xl font-black text-slate-900 dark:text-white tracking-tight">
+                            {user.name}
+                        </h2>
+                        <span className="px-5 py-1.5 bg-[#4F8CFF]/10 text-[#4F8CFF] text-xs font-bold rounded-full border border-[#4F8CFF]/20 self-center">
+                            {user.role?.toUpperCase()}
+                        </span>
+                    </div>
+                    <p className="text-slate-500 dark:text-slate-400 font-medium text-lg italic mb-6">
+                        Personalizing your digital twin experience.
                     </p>
-                    <div className="flex flex-wrap justify-center md:justify-start gap-3 mt-4">
-                        <span className="px-4 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-xl text-xs font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                            <Mail className="w-3.5 h-3.5" /> {user.email}
-                        </span>
-                        <span className="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/30 rounded-xl text-xs font-black text-indigo-600 uppercase tracking-widest flex items-center gap-2 border border-indigo-100 dark:border-indigo-800/50">
-                            <CheckCircle className="w-3.5 h-3.5" /> Active
-                        </span>
+                    <div className="flex flex-wrap justify-center md:justify-start gap-4">
+                        <div className="flex items-center gap-3 px-5 py-2.5 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-700 shadow-sm">
+                            <Mail className="w-4 h-4 text-[#4F8CFF]" />
+                            <span className="text-sm font-bold text-slate-600 dark:text-slate-300">{user.email}</span>
+                        </div>
+                        <div className="flex items-center gap-3 px-5 py-2.5 bg-[#22C55E]/5 rounded-2xl border border-[#22C55E]/10 shadow-sm">
+                            <CheckCircle className="w-4 h-4 text-[#22C55E]" />
+                            <span className="text-sm font-bold text-[#22C55E]">Account Verified</span>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 {/* Left Column: Navigation/Status */}
-                <div className="space-y-6">
+                <div className="space-y-8 animate-fade-in-up [animation-delay:0.1s]">
                     <div className="glass-card p-2">
-                        <button className="w-full flex items-center gap-3 p-4 bg-indigo-600 text-white rounded-2xl shadow-lg shadow-indigo-500/20 font-black uppercase tracking-widest text-xs italic">
-                            <Settings className="w-4 h-4" /> Settings
+                        <button className="w-full flex items-center gap-4 p-5 bg-gradient-to-r from-[#4F8CFF] to-[#8A6CFF] text-white rounded-2xl shadow-lg shadow-[#4F8CFF]/20 font-bold uppercase tracking-[0.1em] text-sm">
+                            <Settings className="w-5 h-5" /> Account Settings
                         </button>
                     </div>
 
-                    <div className="glass-card p-6 border-l-4 border-indigo-500">
-                        <h4 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Activity History</h4>
-                        <div className="space-y-4">
-                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                                <span className="text-xs font-bold text-slate-500">Logged Habits</span>
-                                <span className="text-xs font-black text-indigo-600">30 DAYS</span>
+                    <div className="glass-card p-8 border-l-[6px] border-[#4F8CFF]">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-6">Activity Metrics</h4>
+                        <div className="space-y-5">
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <span className="text-sm font-semibold text-slate-500">Log History</span>
+                                <span className="text-sm font-black text-[#4F8CFF]">30 DAYS</span>
                             </div>
-                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-                                <span className="text-xs font-bold text-slate-500">Consistency Score</span>
-                                <span className="text-xs font-black text-emerald-600">94.2%</span>
+                            <div className="flex justify-between items-center bg-slate-50 dark:bg-slate-800/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                <span className="text-sm font-semibold text-slate-500">Consistency</span>
+                                <span className="text-sm font-black text-[#22C55E]">94.2%</span>
                             </div>
                         </div>
                     </div>
@@ -164,10 +187,12 @@ const Profile = () => {
                 {/* Right Column: Main Settings */}
                 <div className="lg:col-span-2 space-y-8">
                     {/* General Settings */}
-                    <section className="glass-card p-8 border-t-4 border-indigo-500">
-                        <div className="flex items-center gap-3 mb-8">
-                            <UserCircle className="w-6 h-6 text-indigo-500" />
-                            <h3 className="text-xl font-black italic tracking-tight uppercase">Profile <span className="text-indigo-600 not-italic">Settings</span></h3>
+                    <section className="glass-card p-10 border-t-[6px] border-[#4F8CFF] animate-fade-in-up [animation-delay:0.2s]">
+                        <div className="flex items-center gap-4 mb-10">
+                            <div className="p-3 bg-[#4F8CFF]/10 rounded-2xl">
+                                <UserCircle className="w-8 h-8 text-[#4F8CFF]" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tight uppercase">User <span className="gradient-text">Preferences</span></h3>
                         </div>
 
                         <form onSubmit={handleProfileSubmit} className="space-y-8">
@@ -199,33 +224,49 @@ const Profile = () => {
                                     <Palette className="w-3.5 h-3.5" /> App Preferences
                                 </h4>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Theme</span>
-                                        <div className="flex bg-white dark:bg-slate-700 p-1 rounded-xl shadow-inner">
+                                    <div className="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800">
+                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Display Theme</span>
+                                        <div className="flex bg-white dark:bg-slate-700 p-1 rounded-xl shadow-inner border border-slate-100 dark:border-slate-600 transition-all">
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, preferences: { ...formData.preferences, theme: 'light' } })}
-                                                className={`px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.preferences.theme === 'light' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}
+                                                className={`px-5 py-2 text-xs font-bold uppercase rounded-lg transition-all ${formData.preferences.theme === 'light' ? 'bg-[#4F8CFF] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                                             >
                                                 Day
                                             </button>
                                             <button
                                                 type="button"
                                                 onClick={() => setFormData({ ...formData, preferences: { ...formData.preferences, theme: 'dark' } })}
-                                                className={`px-4 py-1.5 text-[10px] font-black uppercase rounded-lg transition-all ${formData.preferences.theme === 'dark' ? 'bg-indigo-600 text-white shadow-lg' : 'text-slate-400'}`}
+                                                className={`px-5 py-2 text-xs font-bold uppercase rounded-lg transition-all ${formData.preferences.theme === 'dark' ? 'bg-[#4F8CFF] text-white shadow-lg' : 'text-slate-400 hover:text-slate-600'}`}
                                             >
                                                 Night
                                             </button>
                                         </div>
                                     </div>
-                                    <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-2xl border border-slate-100 dark:border-slate-800/50">
-                                        <span className="text-sm font-bold text-slate-600 dark:text-slate-300">Animations</span>
+                                    <div className="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 transition-all hover:shadow-md">
+                                        <div>
+                                            <span className="text-sm font-bold text-slate-600 dark:text-slate-300 block">Visual Animations</span>
+                                            <span className="text-[10px] font-bold text-[#4F8CFF] uppercase tracking-widest">Enhanced Interface Bliss</span>
+                                        </div>
                                         <button
                                             type="button"
                                             onClick={() => setFormData({ ...formData, preferences: { ...formData.preferences, animations: !formData.preferences.animations } })}
-                                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-all ${formData.preferences.animations ? 'bg-emerald-500' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 ${formData.preferences.animations ? 'bg-[#22C55E]' : 'bg-slate-300 dark:bg-slate-700'}`}
                                         >
-                                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formData.preferences.animations ? 'translate-x-6' : 'translate-x-1'}`} />
+                                            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${formData.preferences.animations ? 'translate-x-6' : 'translate-x-1'}`} />
+                                        </button>
+                                    </div>
+                                    <div className="flex items-center justify-between p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-800 sm:col-span-2 transition-all hover:shadow-md">
+                                        <div>
+                                            <span className="text-sm font-bold text-slate-600 dark:text-slate-300 block mb-0.5">Physical Fitness Stream</span>
+                                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Toggle daily workout logs & streaks</span>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            onClick={handleFitnessToggle}
+                                            className={`relative inline-flex h-7 w-12 items-center rounded-full transition-all duration-300 ${formData.preferences.fitnessEnabled ? 'bg-[#F97316]' : 'bg-slate-300 dark:bg-slate-700'}`}
+                                        >
+                                            <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow-lg transition-transform duration-300 ${formData.preferences.fitnessEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
                                         </button>
                                     </div>
                                 </div>
@@ -291,21 +332,23 @@ const Profile = () => {
                                 </div>
                             </div>
 
-                            <button type="submit" className="w-full btn-primary py-4 rounded-3xl flex items-center justify-center gap-3">
-                                <Save className="w-5 h-5" />
-                                <span className="uppercase tracking-[0.2em] font-black text-sm italic">Save Changes</span>
+                            <button type="submit" className="w-full btn-primary py-5 rounded-[24px] flex items-center justify-center gap-4 text-lg">
+                                <Save className="w-6 h-6" />
+                                <span className="uppercase tracking-[0.2em] font-black">Save Profile Configuration</span>
                             </button>
                         </form>
                     </section>
 
-                    {/* Security Overhaul */}
-                    <section className="glass-card p-8 border-t-4 border-rose-500 overflow-hidden relative">
-                        <div className="absolute top-0 right-0 p-8 opacity-5">
+                    {/* Security Settings */}
+                    <section className="glass-card p-10 border-t-[6px] border-[#EF4444] overflow-hidden relative shadow-xl">
+                        <div className="absolute top-0 right-0 p-8 opacity-5 text-[#EF4444]">
                             <Key className="w-32 h-32" />
                         </div>
-                        <div className="flex items-center gap-3 mb-8">
-                            <Shield className="w-6 h-6 text-rose-500" />
-                            <h3 className="text-xl font-black italic tracking-tight uppercase">Password <span className="text-rose-500 not-italic">Settings</span></h3>
+                        <div className="flex items-center gap-4 mb-10">
+                            <div className="p-3 bg-[#EF4444]/10 rounded-2xl">
+                                <Shield className="w-8 h-8 text-[#EF4444]" />
+                            </div>
+                            <h3 className="text-2xl font-black tracking-tight uppercase">Security <span className="text-[#EF4444]">Vault</span></h3>
                         </div>
 
                         <form onSubmit={handlePasswordSubmit} className="space-y-6">
@@ -341,13 +384,44 @@ const Profile = () => {
                                     />
                                 </div>
                             </div>
-                            <button type="submit" className="px-8 py-3 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest text-[10px] italic rounded-2xl shadow-lg shadow-rose-500/20 transition-all active:scale-95">
+                            <button type="submit" className="px-10 py-4 bg-[#EF4444] hover:bg-[#EF4444]/90 text-white font-black uppercase tracking-widest text-xs rounded-2xl shadow-xl shadow-[#EF4444]/20 transition-all active:scale-95">
                                 Update Password
                             </button>
                         </form>
                     </section>
                 </div>
             </div>
+
+            {/* Fitness Warning Modal */}
+            {showFitnessWarning && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center px-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-300">
+                    <div className="bg-white dark:bg-slate-900 p-8 rounded-3xl max-w-sm w-full shadow-2xl border border-rose-100 dark:border-rose-900/40 animate-in zoom-in-95 duration-300">
+                        <div className="w-16 h-16 bg-rose-50 dark:bg-rose-900/30 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <AlertCircle className="w-8 h-8 text-rose-500" />
+                        </div>
+                        <h3 className="text-xl font-black text-center text-slate-900 dark:text-white uppercase italic tracking-tight mb-2">
+                            Disable Fitness?
+                        </h3>
+                        <p className="text-sm font-medium text-slate-500 dark:text-slate-400 text-center mb-8">
+                            Are you sure you want to turn off fitness tracking? Your daily workout options and fitness streak will be hidden from the dashboard.
+                        </p>
+                        <div className="flex gap-4">
+                            <button
+                                onClick={() => setShowFitnessWarning(false)}
+                                className="flex-1 py-3 px-4 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 font-black uppercase tracking-widest text-[10px] rounded-xl transition-colors"
+                            >
+                                Keep Enabled
+                            </button>
+                            <button
+                                onClick={confirmDisableFitness}
+                                className="flex-1 py-3 px-4 bg-rose-500 hover:bg-rose-600 text-white font-black uppercase tracking-widest text-[10px] rounded-xl shadow-lg shadow-rose-500/20 transition-colors"
+                            >
+                                Disable
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

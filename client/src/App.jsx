@@ -8,25 +8,35 @@ import Register from './pages/Register';
 import InputData from './pages/InputData';
 import Simulation from './pages/Simulation';
 import Profile from './pages/Profile';
+import AdminDashboard from './pages/AdminDashboard';
 import api from './utils/api';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState(null);
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('theme') === 'dark';
   });
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
+    const token = sessionStorage.getItem('token');
     if (token) {
       setIsAuthenticated(true);
-      fetchPreferences();
     }
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchPreferences();
+    } else {
+      setUser(null);
+    }
+  }, [isAuthenticated]);
 
   const fetchPreferences = async () => {
     try {
       const res = await api.get('/auth/me');
+      setUser(res.data);
       if (res.data.preferences?.theme) {
         const newTheme = res.data.preferences.theme === 'dark';
         setDarkMode(prev => {
@@ -54,7 +64,7 @@ function App() {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
+    sessionStorage.removeItem('token');
     setIsAuthenticated(false);
   };
 
@@ -62,8 +72,8 @@ function App() {
     <Router>
       <div className="min-h-screen bg-slate-50 dark:bg-[#020617] text-slate-900 dark:text-slate-100 font-sans">
         <Toaster position="top-right" /> {/* Add Toaster */}
-        <Navbar isAuthenticated={isAuthenticated} onLogout={handleLogout} darkMode={darkMode} toggleTheme={toggleTheme} />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <Navbar isAuthenticated={isAuthenticated} user={user} onLogout={handleLogout} darkMode={darkMode} toggleTheme={toggleTheme} />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 pt-24">
           <Routes>
             <Route path="/login" element={!isAuthenticated ? <Login setAuth={setIsAuthenticated} /> : <Navigate to="/" />} />
             <Route path="/register" element={!isAuthenticated ? <Register setAuth={setIsAuthenticated} /> : <Navigate to="/" />} />
@@ -71,6 +81,7 @@ function App() {
             <Route path="/input" element={isAuthenticated ? <InputData /> : <Navigate to="/login" />} />
             <Route path="/simulation" element={isAuthenticated ? <Simulation /> : <Navigate to="/login" />} />
             <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
+            <Route path="/admin" element={isAuthenticated && user?.isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
           </Routes>
         </div>
       </div>

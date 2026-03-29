@@ -24,11 +24,18 @@ const Register = ({ setAuth }) => {
         setIsLoading(true);
         try {
             const res = await api.post('/auth/register', { name, email, password, role, gender });
-            localStorage.setItem('token', res.data.token);
+            sessionStorage.setItem('token', res.data.token);
             setAuth(true);
             navigate('/');
         } catch (err) {
-            setError(err.response?.data?.msg || 'Registration failed. Please try again.');
+            console.error("REGISTRATION CATCH BLOCK ERROR:", err);
+            let errMsg = 'Registration failed. Please try again.';
+            if (err.response && err.response.data && err.response.data.msg) {
+                errMsg = err.response.data.msg;
+            } else if (err.message) {
+                errMsg = `Registration failed: ${err.message}`;
+            }
+            setError(errMsg);
         } finally {
             setIsLoading(false);
         }
@@ -39,19 +46,19 @@ const Register = ({ setAuth }) => {
             <div className="max-w-xl w-full animate-in fade-in zoom-in duration-500">
 
                 {/* Brand Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex p-4 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-500/30 mb-4 items-center justify-center">
+                <div className="text-center mb-10 animate-fade-in-up">
+                    <div className="inline-flex p-4 bg-gradient-to-br from-[#4F8CFF] to-[#8A6CFF] rounded-2xl shadow-xl shadow-[#4F8CFF]/20 mb-6 items-center justify-center">
                         <Activity className="h-8 w-8 text-white" />
                     </div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight leading-tight">
+                    <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
                         Create Your <span className="gradient-text">Twin</span>
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                        Sign up to build your healthy habits.
+                    <p className="text-slate-500 dark:text-slate-400 mt-3 font-medium text-lg">
+                        Start your journey to a balanced life.
                     </p>
                 </div>
 
-                <div className="glass-card p-8 sm:p-12 border-t-4 border-indigo-500">
+                <div className="glass-card p-10 sm:p-12 border-none animate-fade-in-up [animation-delay:0.1s]">
                     {error && (
                         <div className="mb-8 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-start gap-3">
                             <ShieldCheck className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -66,12 +73,12 @@ const Register = ({ setAuth }) => {
                                 <div className="group">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                                     <div className="relative">
-                                        <User className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <User className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                         <input
                                             name="name"
                                             type="text"
                                             required
-                                            className="input-modern px-12"
+                                            className="input-modern"
                                             placeholder="Your Name"
                                             value={name}
                                             onChange={onChange}
@@ -81,12 +88,12 @@ const Register = ({ setAuth }) => {
                                 <div className="group">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email</label>
                                     <div className="relative">
-                                        <Mail className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <Mail className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                         <input
                                             name="email"
                                             type="email"
                                             required
-                                            className="input-modern px-12"
+                                            className="input-modern"
                                             placeholder="name@example.com"
                                             value={email}
                                             onChange={onChange}
@@ -96,12 +103,12 @@ const Register = ({ setAuth }) => {
                                 <div className="group">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Password</label>
                                     <div className="relative">
-                                        <Lock className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                        <Lock className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                         <input
                                             name="password"
                                             type="password"
                                             required
-                                            className="input-modern px-12"
+                                            className="input-modern"
                                             placeholder="••••••••"
                                             value={password}
                                             onChange={onChange}
@@ -115,15 +122,15 @@ const Register = ({ setAuth }) => {
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Role</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${role === 'Student' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 shadow-md transform scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}>
+                                        <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${role === 'Student' ? 'border-[#4F8CFF] bg-[#4F8CFF]/10 text-[#4F8CFF] shadow-sm transform scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}>
                                             <input type="radio" name="role" value="Student" checked={role === 'Student'} onChange={onChange} className="sr-only" />
                                             <GraduationCap className="w-6 h-6" />
-                                            <span className="text-xs font-black uppercase italic">Student</span>
+                                            <span className="text-xs font-bold uppercase tracking-wider">Student</span>
                                         </label>
-                                        <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${role === 'Professional' ? 'border-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 shadow-md transform scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}>
+                                        <label className={`cursor-pointer rounded-2xl border-2 p-4 flex flex-col items-center justify-center gap-2 transition-all ${role === 'Professional' ? 'border-[#4F8CFF] bg-[#4F8CFF]/10 text-[#4F8CFF] shadow-sm transform scale-105' : 'border-slate-100 dark:border-slate-800 hover:border-slate-200'}`}>
                                             <input type="radio" name="role" value="Professional" checked={role === 'Professional'} onChange={onChange} className="sr-only" />
                                             <Briefcase className="w-6 h-6" />
-                                            <span className="text-xs font-black uppercase italic">Pro</span>
+                                            <span className="text-xs font-bold uppercase tracking-wider">Professional</span>
                                         </label>
                                     </div>
                                 </div>
@@ -131,11 +138,11 @@ const Register = ({ setAuth }) => {
                                 <div>
                                     <label className="block text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-3">Gender</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <label className={`cursor-pointer border-b-4 p-3 flex items-center justify-center gap-2 transition-all rounded-xl ${gender === 'Male' ? 'border-indigo-600 bg-slate-50 dark:bg-slate-800 text-indigo-600 font-bold' : 'border-transparent text-slate-400 italic font-medium'}`}>
+                                        <label className={`cursor-pointer border-b-4 p-3 flex items-center justify-center gap-2 transition-all rounded-xl ${gender === 'Male' ? 'border-[#4F8CFF] bg-slate-50 dark:bg-slate-800 text-[#4F8CFF] font-bold' : 'border-transparent text-slate-400'}`}>
                                             <input type="radio" name="gender" value="Male" checked={gender === 'Male'} onChange={onChange} className="sr-only" />
                                             <UserCircle className="w-4 h-4" /> Male
                                         </label>
-                                        <label className={`cursor-pointer border-b-4 p-3 flex items-center justify-center gap-2 transition-all rounded-xl ${gender === 'Female' ? 'border-indigo-600 bg-slate-50 dark:bg-slate-800 text-indigo-600 font-bold' : 'border-transparent text-slate-400 italic font-medium'}`}>
+                                        <label className={`cursor-pointer border-b-4 p-3 flex items-center justify-center gap-2 transition-all rounded-xl ${gender === 'Female' ? 'border-[#4F8CFF] bg-slate-50 dark:bg-slate-800 text-[#4F8CFF] font-bold' : 'border-transparent text-slate-400'}`}>
                                             <input type="radio" name="gender" value="Female" checked={gender === 'Female'} onChange={onChange} className="sr-only" />
                                             <UserCircle className="w-4 h-4" /> Female
                                         </label>
@@ -147,10 +154,10 @@ const Register = ({ setAuth }) => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex justify-center items-center gap-2 py-5 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all disabled:opacity-50"
+                            className="btn-primary w-full py-5 text-base flex items-center justify-center gap-2"
                         >
-                            {isLoading ? 'Creating Account...' : (
-                                <>Create Account <ArrowRight className="w-4 h-4" /></>
+                            {isLoading ? 'Creating Your Reflection...' : (
+                                <>Initialize Reflective Twin <ArrowRight className="w-5 h-5" /></>
                             )}
                         </button>
                     </form>

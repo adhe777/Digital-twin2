@@ -20,10 +20,10 @@ const AnimatedAssistant = ({ mood = 3, isTalking = false, sleep = 8, productivit
 
     // Premium Color Palette
     const colors = {
-        primary: "#6366f1", // Indigo 500 (Base theme)
-        secondary: "#8b5cf6", // Violet 500
-        skin: "currentColor", // Adapts to text color (dark/light mode)
-        accent: "#10b981", // Emerald 500
+        primary: "#4F8CFF", // Modern Blue
+        secondary: "#8A6CFF", // Modern Purple
+        skin: "currentColor", // Adapts to text color
+        accent: "#22C55E", // Modern Green
         highlight: "#ffffff",
     };
 

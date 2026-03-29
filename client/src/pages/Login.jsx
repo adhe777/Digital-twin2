@@ -18,7 +18,7 @@ const Login = ({ setAuth }) => {
         setIsLoading(true);
         try {
             const res = await api.post('/auth/login', { email, password });
-            localStorage.setItem('token', res.data.token);
+            sessionStorage.setItem('token', res.data.token);
             setAuth(true);
             navigate('/');
         } catch (err) {
@@ -33,19 +33,19 @@ const Login = ({ setAuth }) => {
             <div className="max-w-md w-full animate-in fade-in zoom-in duration-500">
 
                 {/* Brand Header */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex p-4 bg-indigo-600 rounded-2xl shadow-xl shadow-indigo-500/30 mb-4 items-center justify-center">
+                <div className="text-center mb-10 animate-fade-in-up">
+                    <div className="inline-flex p-4 bg-gradient-to-br from-[#4F8CFF] to-[#8A6CFF] rounded-2xl shadow-xl shadow-[#4F8CFF]/20 mb-6 items-center justify-center">
                         <Activity className="h-8 w-8 text-white" />
                     </div>
-                    <h2 className="text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+                    <h2 className="text-4xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
                         Welcome <span className="gradient-text">Back</span>
                     </h2>
-                    <p className="text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                        Log in to your Productivity Twin.
+                    <p className="text-slate-500 dark:text-slate-400 mt-3 font-medium text-lg">
+                        Reconnect with your Digital Reflection.
                     </p>
                 </div>
 
-                <div className="glass-card p-8 sm:p-10 border-t-4 border-indigo-500">
+                <div className="glass-card p-10 sm:p-12 border-none animate-fade-in-up [animation-delay:0.1s]">
                     {error && (
                         <div className="mb-6 p-4 bg-rose-50 dark:bg-rose-900/20 border border-rose-100 dark:border-rose-900/30 rounded-2xl flex items-start gap-3">
                             <ShieldCheck className="w-5 h-5 text-rose-500 shrink-0 mt-0.5" />
@@ -58,12 +58,12 @@ const Login = ({ setAuth }) => {
                             <div className="relative group">
                                 <label className="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Email</label>
                                 <div className="relative">
-                                    <Mail className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                    <Mail className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                     <input
                                         name="email"
                                         type="email"
                                         required
-                                        className="input-modern px-12"
+                                        className="input-modern"
                                         placeholder="name@example.com"
                                         value={email}
                                         onChange={onChange}
@@ -77,12 +77,12 @@ const Login = ({ setAuth }) => {
                                     <Link to="#" className="text-[10px] font-black text-indigo-500 uppercase hover:underline">Lost access?</Link>
                                 </div>
                                 <div className="relative">
-                                    <Lock className="absolute top-1/2 -translate-y-1/2 left-4 w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                                    <Lock className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                     <input
                                         name="password"
                                         type="password"
                                         required
-                                        className="input-modern px-12"
+                                        className="input-modern"
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={onChange}
@@ -94,10 +94,10 @@ const Login = ({ setAuth }) => {
                         <button
                             type="submit"
                             disabled={isLoading}
-                            className="w-full flex justify-center items-center gap-2 py-4 px-6 bg-indigo-600 hover:bg-indigo-700 text-white font-black uppercase tracking-widest text-sm rounded-2xl shadow-lg shadow-indigo-500/30 active:scale-95 transition-all disabled:opacity-50 disabled:pointer-events-none"
+                            className="btn-primary w-full py-4 text-base flex items-center justify-center gap-2"
                         >
-                            {isLoading ? 'Logging in...' : (
-                                <>Login <ArrowRight className="w-4 h-4" /></>
+                            {isLoading ? 'Processing...' : (
+                                <>Sign In <ArrowRight className="w-5 h-5" /></>
                             )}
                         </button>
                     </form>

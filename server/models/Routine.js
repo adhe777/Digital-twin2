@@ -21,7 +21,26 @@ const RoutineSchema = new mongoose.Schema({
         type: Number,
         required: true,
         min: 1,
-        max: 5  // MVP Requirement: 1-5
+        max: 5
+    },
+    workoutEnabled: {
+        type: Boolean,
+        default: false
+    },
+    workoutDuration: {
+        type: Number
+    },
+    workoutType: {
+        type: String
+    },
+    workoutIntensity: {
+        type: String
+    },
+    caloriesBurned: {
+        type: Number
+    },
+    waterIntake: {
+        type: Number
     },
     date: {
         type: Date,

@@ -24,9 +24,14 @@ const UserSchema = new mongoose.Schema({
         enum: ['Male', 'Female'],
         default: 'Male'
     },
+    isAdmin: {
+        type: Boolean,
+        default: false
+    },
     preferences: {
         theme: { type: String, enum: ['light', 'dark'], default: 'light' },
-        animations: { type: Boolean, default: true }
+        animations: { type: Boolean, default: true },
+        fitnessEnabled: { type: Boolean, default: false }
     },
     studentSettings: {
         preferredStudyTime: { type: String, enum: ['Morning', 'Afternoon', 'Night'], default: 'Morning' },
@@ -39,6 +44,22 @@ const UserSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    streak: {
+        type: Number,
+        default: 0
+    },
+    xp: {
+        type: Number,
+        default: 0
+    },
+    badges: {
+        type: [String],
+        default: []
+    },
+    fitnessStreak: {
+        type: Number,
+        default: 0
     }
 });
 
