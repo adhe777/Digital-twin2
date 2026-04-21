@@ -124,3 +124,21 @@
 .animate-fire-pulse {
   animation: pulse-fire 2s infinite ease-in-out;
 }
+/* Enhanced Streak Styles */
+.streak-gray {
+  @apply bg-slate-200 dark:bg-slate-800 text-slate-400 border-transparent transition-all duration-500 scale-95 opacity-60;
+}
+
+.streak-blue {
+  @apply bg-blue-50 dark:bg-blue-900/20 text-blue-500 border-blue-100 dark:border-blue-900/30 transition-all duration-500 font-bold;
+}
+
+.streak-best {
+  @apply bg-gradient-to-r from-[#4F8CFF] to-orange-500 text-white border-transparent shadow-lg shadow-orange-500/20 transition-all duration-500 scale-105 font-bold;
+  animation: streak-glow 2s infinite alternate ease-in-out;
+}
+
+@keyframes streak-glow {
+  0% { transform: scale(1.05); filter: drop-shadow(0 0 5px rgba(249, 115, 22, 0.4)); }
+  100% { transform: scale(1.1); filter: drop-shadow(0 0 15px rgba(249, 115, 22, 0.6)); }
+}

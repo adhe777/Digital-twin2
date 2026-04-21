@@ -21,7 +21,7 @@ const Simulation = () => {
     const runSimulation = async () => {
         setIsSimulating(true);
         try {
-            const res = await axios.post('http://127.0.0.1:8000/simulate', {
+            const res = await axios.post('http://127.0.0.1:8600/simulate', {
                 current,
                 changes
             });

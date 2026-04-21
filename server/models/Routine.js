@@ -45,6 +45,14 @@ const RoutineSchema = new mongoose.Schema({
     date: {
         type: Date,
         default: Date.now
+    },
+    habitsSynced: {
+        type: Boolean,
+        default: false
+    },
+    workoutSynced: {
+        type: Boolean,
+        default: false
     }
 }, { collection: 'routines' }); // MVP Requirement: strict collection name
 

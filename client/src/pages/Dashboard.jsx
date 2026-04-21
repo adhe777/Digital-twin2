@@ -2,10 +2,12 @@ import { useState, useEffect, useMemo } from 'react';
 import api from '../utils/api';
 import axios from 'axios';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Activity, AlertTriangle, Zap, Download, CheckCircle, TrendingUp, AlertCircle, BookOpen, Target, Flame, Brain, Clock, Sparkles, PlusCircle, Trophy, Star, Award, MessageSquare, Heart } from 'lucide-react';
+import { Activity, AlertTriangle, Zap, Download, CheckCircle, TrendingUp, AlertCircle, BookOpen, Target, Flame, Brain, Clock, Sparkles, PlusCircle, Trophy, Star, Award, MessageSquare, Heart, RefreshCcw } from 'lucide-react';
+import toast from 'react-hot-toast';
+import { getSimulatedDate, incrementSimulatedDay, resetSimulatedTime, isSimulating } from '../utils/timeSim';
 import DigitalTwinBuddy from '../components/DigitalTwinBuddy';
 
-const AI_SERVICE_URL = 'http://127.0.0.1:8000';
+const AI_SERVICE_URL = 'http://127.0.0.1:8600';
 
 const Dashboard = () => {
     const [logs, setLogs] = useState([]);
@@ -19,6 +21,8 @@ const Dashboard = () => {
     const [fitnessEnabled, setFitnessEnabled] = useState(false);
     const [xp, setXp] = useState(0);
     const [badges, setBadges] = useState([]);
+    const [isBriefingActive, setIsBriefingActive] = useState(false);
+    const [briefingMessage, setBriefingMessage] = useState('');
 
     const [microGoal, setMicroGoal] = useState(() => {
         const saved = sessionStorage.getItem('dailyMicroGoal');
@@ -92,6 +96,32 @@ const Dashboard = () => {
         }
     };
 
+    const triggerBriefing = async () => {
+        setIsTalking(true);
+        setIsBriefingActive(true);
+        setBriefingMessage('Analyzing neural patterns...');
+        
+        try {
+            const res = await api.get('/routines/briefing');
+            setBriefingMessage(res.data.message);
+            
+            // Auto-close after 10 seconds if not closed manually
+            setTimeout(() => {
+                if (isBriefingActive) {
+                    setIsBriefingActive(false);
+                    setIsTalking(false);
+                }
+            }, 10000);
+        } catch (err) {
+            console.error("Briefing Error:", err);
+            setBriefingMessage("Neural link unstable. Please try synchronization again.");
+            setTimeout(() => {
+                setIsBriefingActive(false);
+                setIsTalking(false);
+            }, 3000);
+        }
+    };
+
     const chartData = logs.slice(0, 7).reverse().map(log => ({
         date: new Date(log.date).toLocaleDateString(undefined, { weekday: 'short' }),
         productivity: Math.max(0, (log.studyHours * 10) - (log.screenTime * 2) + (log.sleepHours * 2)),
@@ -100,67 +130,96 @@ const Dashboard = () => {
         study: log.studyHours
     }));
 
+    // Real-time Streak Calculation (Frontend)
+    const calculatedStreak = useMemo(() => {
+        if (!logs || logs.length === 0) return 0;
+        
+        // 1. Normalize dates to strings for safe comparison
+        const dateStrings = [...new Set(logs.map(log => new Date(log.date).toDateString()))];
+        
+        const simTodayStr = getSimulatedDate().toDateString();
+        const simYesterday = getSimulatedDate();
+        simYesterday.setDate(simYesterday.getDate() - 1);
+        const simYesterdayStr = simYesterday.toDateString();
+
+        // 2. Check if streak is active (log must exist for today or yesterday)
+        const hasLogToday = dateStrings.includes(simTodayStr);
+        const hasLogYesterday = dateStrings.includes(simYesterdayStr);
+
+        if (!hasLogToday && !hasLogYesterday) return 0;
+
+        // 3. Count backwards
+        let streakCount = 0;
+        let checkDate = getSimulatedDate();
+        
+        // If no log today, we start checking from yesterday
+        if (!hasLogToday) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        while (dateStrings.includes(checkDate.toDateString())) {
+            streakCount++;
+            checkDate.setDate(checkDate.getDate() - 1);
+            if (streakCount > 1000) break; // Safety
+        }
+
+        return streakCount;
+    }, [logs]);
+
     const isStudent = userRole?.toLowerCase() === 'student';
 
     const assistantMessage = useMemo(() => {
         if (!logs.length) return isStudent ? "I'm here to help you optimize your study session." : "Ready to assist with your productivity workflow.";
 
         const latest = logs[0];
-        const prod = Math.max(0, (latest.studyHours * 10) - (latest.screenTime * 2) + (latest.sleepHours * 2));
         const sleep = latest.sleepHours;
+        const mood = latest.mood;
+        const productivity = analysis?.productivity_score || 70;
         const burnoutRisk = analysis?.burnout_risk || 'Low';
 
-        const weekLogs = logs.slice(0, 7);
-        const sleepMean = weekLogs.reduce((a, b) => a + b.sleepHours, 0) / (weekLogs.length || 1);
-        const sleepVar = weekLogs.reduce((a, b) => a + Math.pow(b.sleepHours - sleepMean, 2), 0) / (weekLogs.length || 1);
-        const consistency = sleepVar < 1.5 ? 'Consistent' : 'Irregular';
+        // 1. Victory / Outstanding Performance
+        if (microGoal.completed || productivity >= 90) {
+            return isStudent 
+                ? "Academic excellence achieved! Your focus is legendary today." 
+                : "KPIs cleared! You're operating at an elite professional level.";
+        }
 
-        if (prod >= 80) return isStudent ? "Excellent academic momentum! Your focus levels are peak." : "Outstanding output today. You're exceeding all KPIs.";
-        if (burnoutRisk === 'High') return isStudent ? "Your energy levels are critically low. Prioritize rest over extra study." : "Burnout risk detected. Recommend shifting to low-intensity tasks.";
-        if (sleep < 6) return isStudent ? "Sleep deprivation alert. Your cognitive retention will suffer." : "Rest deficit noted. Short-term productivity may be compromised.";
-        if (fitnessStreak > 3) return "Great consistency! Your fitness routine is improving your focus.";
-        if (consistency === 'Consistent') return isStudent ? "Great consistency! Your study habit is solidifying." : "Strong operational consistency. Keep this sustainable pace.";
+        // 2. Critical Needs / Burnout / Exhaustion
+        if (latest.workoutEnabled && latest.workoutIntensity === 'High') {
+            return "Incredible push today! Your body needs recovery now. Don't overdo the mental tasks.";
+        }
+        if (sleep < 5) {
+            return isStudent
+                ? "Sleep levels are critical. Your brain cannot process new information efficiently when this tired."
+                : "Rest deficit detected. Your decision-making and focus will be compromised. Prioritize sleep.";
+        }
+        if (mood <= 2) {
+            return "Mental fatigue is setting in. A short break or meditation could reset your focus baseline.";
+        }
+
+        // 3. Activity Based
+        if (latest.workoutEnabled) {
+            return "Endorphins active! Use this post-workout energy spike for your most challenging tasks.";
+        }
+        if (latest.studyHours > 2 && productivity < 60) {
+            return isStudent
+                ? "Deep study detected, but retention seems low. Try the Pomodoro technique to stay sharp."
+                : "High effort but low focus efficiency. Perhaps it's time to switch to a different type of task?";
+        }
+        if (sleep >= 7 && mood >= 4) {
+            return "State of Flow detected. This is your peak window for creative and complex thinking.";
+        }
+
+        // 4. General Positive / Consistency
+        if (productivity > 70) {
+            return isStudent ? "Consistent growth! You're building a very strong academic foundation." : "Sustainable high performance. You're hitting the sweet spot of work-life balance.";
+        }
+        if (fitnessStreak >= 7) {
+            return "One week of consistent movement! Your discipline is becoming a powerful habit.";
+        }
 
         return isStudent ? "I'm here to help you optimize your study session." : "Ready to assist with your productivity workflow.";
-    }, [logs, analysis, isStudent, fitnessStreak]);
-
-    // Interactive Chat Logic
-    const [chatInput, setChatInput] = useState('');
-    const [chatHistory, setChatHistory] = useState([
-        { role: 'assistant', text: isStudent ? "Hey! Ready to hit the books?" : "System online. Let's maximize your workflow." }
-    ]);
-    const [isChatLoading, setIsChatLoading] = useState(false);
-
-    const onSendMessage = async (e) => {
-        e.preventDefault();
-        if (!chatInput.trim()) return;
-
-        const userMsg = chatInput;
-        setChatInput('');
-        setChatHistory(prev => [...prev, { role: 'user', text: userMsg }]);
-        setIsChatLoading(true);
-        setIsTalking(true);
-
-        try {
-            const res = await axios.post(`${AI_SERVICE_URL}/chat`, {
-                message: userMsg,
-                data: {
-                    sleepHours: logs.length > 0 ? logs[0].sleepHours : 8,
-                    studyHours: logs.length > 0 ? logs[0].studyHours : 0,
-                    screenTime: logs.length > 0 ? logs[0].screenTime : 0,
-                    mood: logs.length > 0 ? logs[0].mood : 3,
-                    role: userRole
-                }
-            });
-            setChatHistory(prev => [...prev, { role: 'assistant', text: res.data.response }]);
-        } catch (err) {
-            console.error("Chat Error:", err);
-            setChatHistory(prev => [...prev, { role: 'assistant', text: "Sorry, I lost my connection for a second." }]);
-        } finally {
-            setIsChatLoading(false);
-            setTimeout(() => setIsTalking(false), 2000);
-        }
-    };
+    }, [logs, analysis, isStudent, fitnessStreak, microGoal.completed]);
 
     const downloadReport = () => {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(logs, null, 4));
@@ -170,6 +229,32 @@ const Dashboard = () => {
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
+    };
+
+    const simulateStreak = async (daysBack = 1, shouldReload = true) => {
+        try {
+            const targetDate = new Date();
+            targetDate.setDate(targetDate.getDate() - daysBack);
+            
+            const mockData = {
+                sleepHours: 8,
+                studyHours: 4,
+                screenTime: 2,
+                mood: 5,
+                workoutEnabled: true,
+                workoutIntensity: 'High',
+                date: targetDate.toISOString()
+            };
+            
+            await api.post('/routines', mockData);
+            if (shouldReload) {
+                toast.success(`Mock log created for ${targetDate.toDateString()}`);
+                window.location.reload();
+            }
+        } catch (err) {
+            console.error("Simulation error", err);
+            if (shouldReload) toast.error("Failed to simulate log");
+        }
     };
 
     return (
@@ -182,12 +267,28 @@ const Dashboard = () => {
                         <span className="px-4 py-1.5 bg-[#4F8CFF]/10 text-[#4F8CFF] text-xs font-bold rounded-full border border-[#4F8CFF]/20">
                             {isStudent ? 'STUDENT MODE' : 'EXECUTIVE MODE'}
                         </span>
-                        {isStudent && (
-                            <div className="flex items-center gap-1.5 text-orange-500 bg-orange-50 dark:bg-orange-900/20 px-3 py-1 rounded-full border border-orange-100 dark:border-orange-900/30">
-                                <Flame className="w-4 h-4 fill-current" />
-                                <span className="text-sm font-bold">{streak} Day Streak</span>
-                            </div>
-                        )}
+                        
+                        {(() => {
+                            const today = getSimulatedDate().toDateString();
+                            const lastLogDate = logs.length > 0 ? new Date(logs[0].date).toDateString() : null;
+                            const habitLoggedToday = lastLogDate === today;
+                            const workoutDoneToday = habitLoggedToday && logs[0].workoutEnabled;
+                            
+                            let streakClass = "streak-gray";
+                            if (habitLoggedToday) {
+                                streakClass = (workoutDoneToday && fitnessEnabled) ? "streak-best" : "streak-blue";
+                            }
+
+                            return (
+                                <div className={`flex items-center gap-2 px-4 py-1.5 rounded-full border shadow-sm transition-all duration-500 ${streakClass}`}>
+                                    <Flame className={`w-4 h-4 ${habitLoggedToday ? 'fill-current' : 'opacity-40'}`} />
+                                    <span className="text-sm font-black tracking-tight">{calculatedStreak} Day Streak</span>
+                                    {habitLoggedToday && workoutDoneToday && fitnessEnabled && (
+                                        <Sparkles className="w-3.5 h-3.5 animate-pulse" />
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </div>
                     <h1 className="text-5xl font-extrabold text-slate-900 dark:text-white tracking-tight leading-tight">
                         Your <span className="gradient-text">{isStudent ? 'Study' : 'Work'} Companion</span>
@@ -197,11 +298,35 @@ const Dashboard = () => {
                     </p>
                 </div>
                 <div className="flex items-center gap-3">
+                    {isSimulating() && (
+                        <button
+                            onClick={() => {
+                                resetSimulatedTime();
+                                window.location.reload();
+                            }}
+                            className="flex items-center gap-2 px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-2xl text-xs font-black text-rose-600 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                        >
+                            <RefreshCcw className="w-4 h-4" />
+                            RESET SIM
+                        </button>
+                    )}
+                    <button
+                        onClick={() => {
+                            incrementSimulatedDay();
+                            toast.success(`Day Incremented! It is now ${getSimulatedDate().toDateString()}`);
+                            window.location.reload();
+                        }}
+                        className="flex items-center gap-2 px-6 py-3 bg-indigo-600 hover:bg-indigo-700 rounded-2xl text-sm font-black text-white transition-all shadow-lg shadow-indigo-200 dark:shadow-none"
+                    >
+                        <Zap className="w-5 h-5 fill-current" />
+                        Next Day ⚡
+                    </button>
                     <button
                         onClick={downloadReport}
                         className="flex items-center gap-2 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl text-sm font-bold text-slate-700 dark:text-slate-200 hover:border-[#4F8CFF] transition-all shadow-sm"
                     >
-                        <Download className="w-4 h-4" /> Export Report
+                        <Download className="w-5 h-5 text-slate-400" />
+                        Download Report
                     </button>
                     <button className="btn-primary p-3 rounded-2xl">
                         <PlusCircle className="w-6 h-6" />
@@ -231,6 +356,7 @@ const Dashboard = () => {
                                 userRole={userRole}
                                 gender={userGender}
                                 fitnessStreak={fitnessStreak}
+                                streak={calculatedStreak}
                                 goalCompleted={microGoal.completed}
                                 className="scale-125 mb-8"
                             />
@@ -245,6 +371,40 @@ const Dashboard = () => {
                                 </p>
                             </div>
                         </div>
+
+                        {/* Briefing HUD Overlay */}
+                        {isBriefingActive && (
+                            <div className="absolute inset-0 z-50 bg-white/20 dark:bg-slate-900/60 backdrop-blur-xl p-8 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-500 rounded-[32px] border border-white/30 dark:border-slate-700/50">
+                                <div className="p-4 bg-[#4F8CFF] rounded-2xl mb-6 shadow-lg shadow-[#4F8CFF]/40 animate-pulse">
+                                    <Brain className="w-8 h-8 text-white" />
+                                </div>
+                                <h3 className="text-sm font-black text-[#4F8CFF] uppercase tracking-[0.3em] mb-4">Neural Briefing</h3>
+                                <p className="text-xl font-extrabold text-slate-900 dark:text-white leading-relaxed italic mb-8">
+                                    "{briefingMessage}"
+                                </p>
+                                <button 
+                                    onClick={() => {
+                                        setIsBriefingActive(false);
+                                        setIsTalking(false);
+                                    }}
+                                    className="px-8 py-3 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-2xl text-xs font-black uppercase tracking-widest hover:scale-105 transition-transform"
+                                >
+                                    Dismiss Link
+                                </button>
+                            </div>
+                        )}
+
+                        {/* Briefing Trigger Button */}
+                        <button 
+                            onClick={triggerBriefing}
+                            disabled={isBriefingActive}
+                            className="absolute top-8 right-8 z-30 p-4 bg-white/80 dark:bg-slate-800/80 backdrop-blur-md rounded-2xl border border-slate-100 dark:border-slate-700 shadow-lg group hover:bg-[#4F8CFF] transition-all duration-500"
+                        >
+                            <Sparkles className="w-6 h-6 text-[#4F8CFF] group-hover:text-white transition-colors" />
+                            <div className="absolute top-full right-0 mt-3 whitespace-nowrap px-4 py-2 bg-slate-900 text-white text-[10px] font-black rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none uppercase tracking-widest">
+                                Start Neural Briefing
+                            </div>
+                        </button>
                     </div>
                     
                     {/* XP Progress Bar */}
@@ -379,8 +539,8 @@ const Dashboard = () => {
             {/* Secondary Grid: Trends & Chat */}
             <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-8">
 
-                {/* Visual Trends - Span 2 on large */}
-                <div className="lg:col-span-2 xl:col-span-2 glass-card p-8 min-h-[450px] flex flex-col animate-fade-in-up [animation-delay:0.7s]">
+                {/* Visual Trends - Full Width */}
+                <div className="lg:col-span-3 xl:col-span-4 glass-card p-8 min-h-[450px] flex flex-col animate-fade-in-up [animation-delay:0.7s]">
                     <div className="flex items-center justify-between mb-8">
                         <div>
                             <h3 className="text-2xl font-extrabold text-slate-800 dark:text-white tracking-tight uppercase italic">{isStudent ? 'STUDY' : 'WORK'} <span className="gradient-text not-italic">Trends</span></h3>
@@ -420,63 +580,8 @@ const Dashboard = () => {
                         </ResponsiveContainer>
                     </div>
                 </div>
-
-                {/* AI Chat Interface - Column 3 and 4 */}
-                <div className="lg:col-span-1 xl:col-span-2 glass-card p-1 overflow-hidden flex flex-col min-h-[450px] animate-fade-in-up [animation-delay:0.8s]">
-                    <div className="bg-gradient-to-r from-[#4F8CFF] to-[#8A6CFF] p-6 text-white relative h-28 flex items-center shrink-0">
-                        <Sparkles className="absolute right-6 top-6 w-12 h-12 opacity-20" />
-                        <div>
-                            <h3 className="text-xl font-extrabold tracking-tight flex items-center gap-2">
-                                <MessageSquare className="w-6 h-6" /> {isStudent ? 'TWIN DIALOGUE' : 'EXECUTIVE REFLECTION'}
-                            </h3>
-                            <p className="text-xs font-bold text-indigo-100 uppercase tracking-widest mt-1 opacity-90">Cognitive Link Active</p>
-                        </div>
-                    </div>
-                    <div className="p-6 flex-1 flex flex-col min-h-0 bg-slate-50/30 dark:bg-slate-900/10">
-                        <div className="flex-1 overflow-y-auto space-y-4 mb-4 pr-2 custom-scrollbar">
-                            {chatHistory.map((msg, i) => (
-                                <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                                    <div className={`max-w-[85%] px-5 py-3 rounded-2xl text-sm font-semibold shadow-sm ${
-                                        msg.role === 'user' 
-                                            ? 'bg-gradient-to-r from-[#4F8CFF] to-[#8A6CFF] text-white rounded-tr-none' 
-                                            : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 border border-slate-100 dark:border-slate-700 rounded-tl-none'
-                                    }`}>
-                                        {msg.text}
-                                    </div>
-                                </div>
-                            ))}
-                            {isChatLoading && (
-                                <div className="flex justify-start">
-                                    <div className="px-5 py-3 bg-white dark:bg-slate-800 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 rounded-tl-none">
-                                        <div className="flex gap-1.5">
-                                            <div className="w-2 h-2 bg-[#4F8CFF] rounded-full animate-bounce" />
-                                            <div className="w-2 h-2 bg-[#4F8CFF] rounded-full animate-bounce [animation-delay:0.2s]" />
-                                            <div className="w-2 h-2 bg-[#4F8CFF] rounded-full animate-bounce [animation-delay:0.4s]" />
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                        
-                        <form onSubmit={onSendMessage} className="relative">
-                            <input
-                                type="text"
-                                value={chatInput}
-                                onChange={(e) => setChatInput(e.target.value)}
-                                placeholder="Talk to your digital self..."
-                                className="w-full pl-6 pr-14 py-4 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl focus:ring-2 focus:ring-[#4F8CFF] outline-none transition-all shadow-inner"
-                            />
-                            <button 
-                                type="submit"
-                                disabled={isChatLoading || !chatInput.trim()}
-                                className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center bg-gradient-to-br from-[#4F8CFF] to-[#8A6CFF] text-white rounded-xl hover:scale-105 active:scale-95 transition-all disabled:opacity-50"
-                            >
-                                <Zap className="w-5 h-5 fill-current" />
-                            </button>
-                        </form>
-                    </div>
-                </div>
             </div>
+
 
             {/* Bottom Row: Detailed Intelligence */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { Lock, Mail, Activity, ArrowRight, ShieldCheck } from 'lucide-react';
+import { Lock, Mail, Activity, ArrowRight, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 
 const Login = ({ setAuth }) => {
     const [formData, setFormData] = useState({ email: '', password: '' });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const { email, password } = formData;
@@ -74,19 +75,25 @@ const Login = ({ setAuth }) => {
                             <div className="relative group">
                                 <div className="flex justify-between items-center mb-2 ml-1">
                                     <label className="block text-xs font-black text-slate-400 uppercase tracking-widest">Password</label>
-                                    <Link to="#" className="text-[10px] font-black text-indigo-500 uppercase hover:underline">Lost access?</Link>
                                 </div>
                                 <div className="relative">
                                     <Lock className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                     <input
                                         name="password"
-                                        type="password"
+                                        type={showPassword ? "text" : "password"}
                                         required
-                                        className="input-modern"
+                                        className="input-modern pr-12"
                                         placeholder="••••••••"
                                         value={password}
                                         onChange={onChange}
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-400 hover:text-[#4F8CFF] transition-colors p-1"
+                                    >
+                                        {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                    </button>
                                 </div>
                             </div>
                         </div>

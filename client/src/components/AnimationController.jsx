@@ -3,7 +3,7 @@ import { useFrame } from '@react-three/fiber';
 import { Text, Float, Sparkles, Sphere, MeshDistortMaterial } from '@react-three/drei';
 import * as THREE from 'three';
 
-const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', children }) => {
+const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', mousePos = { x: 0, y: 0 }, children }) => {
   const groupRef = useRef();
   const vfxRef = useRef();
   const isProfessional = userRole?.toLowerCase() === 'professional';
@@ -18,14 +18,17 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
     mouthScaleY: 1,
     mouthScaleX: 1,
     eyeScaleY: 1,
-    bodyScale: 1
+    bodyScale: 1,
+    lookAtX: 0,
+    lookAtY: 0
   });
 
   useFrame((state) => {
     if (!groupRef.current) return;
     
     const t = state.clock.getElapsedTime();
-    const lerpFactor = 0.08; // Slightly slower for more "weight"
+    const lerpFactor = 0.08; 
+    const lookLerpFactor = 0.05;
     
     // --- FIND NODES ---
     let headGroup, leftArmGroup, rightArmGroup;
@@ -51,8 +54,16 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
     let targetEyeY = 1;
     let targetBodyScale = 1;
 
-    // --- ORGANIC BASE MOTION (Idle / Breathing) ---
-    // Multiple sine layers for non-repetitive organic feeling
+    // --- CURSOR TRACKING (LookAt) ---
+    // Only track if not in a restrictive state (like victory or exercises)
+    const isStationary = ['neutral', 'happy', 'talking', 'focused'].includes(avatarState);
+    const targetLookAtX = isStationary ? mousePos.y * 0.3 : 0;
+    const targetLookAtY = isStationary ? mousePos.x * 0.5 : 0;
+
+    transition.current.lookAtX = THREE.MathUtils.lerp(transition.current.lookAtX, targetLookAtX, lookLerpFactor);
+    transition.current.lookAtY = THREE.MathUtils.lerp(transition.current.lookAtY, targetLookAtY, lookLerpFactor);
+
+    // --- ORGANIC BASE MOTION ---
     const breathing = Math.sin(t * 1.5) * 0.005;
     const microSway = Math.sin(t * 0.4) * 0.02;
     const macroSway = Math.cos(t * 0.2) * 0.01;
@@ -89,7 +100,7 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
         targetHeadY = 0.45;
         targetMouthY = 0.4;
         targetMouthX = 0.6;
-        targetEyeY = 0.7; // Squinting
+        targetEyeY = 0.7;
         break;
 
       case 'meditating':
@@ -98,7 +109,7 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
         targetBodyX = -0.1;
         targetLArmZ = 0.8;
         targetRArmZ = -0.8;
-        targetEyeY = 0.1; // Eyes closed
+        targetEyeY = 0.1;
         targetBodyScale = 1 + Math.sin(t * 0.5) * 0.02; 
         break;
 
@@ -113,11 +124,10 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
         break;
 
       case 'sleepy':
-        const heavyHead = 0.5 + Math.sin(t * 0.4) * 0.2;
-        targetHeadX = heavyHead;
+        targetHeadX = 0.6 + Math.sin(t * 0.4) * 0.15;
         groupRef.current.position.y += Math.sin(t * 0.6) * 0.04;
-        targetEyeY = 0.15;
-        targetMouthY = 1.5 + Math.abs(Math.sin(t * 0.3)) * 2; // Occasional yawning
+        targetEyeY = 0.05;
+        targetMouthY = 1.2;
         targetMouthX = 0.8;
         break;
 
@@ -175,16 +185,12 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
         break;
 
       default:
-        // --- NATURAL IDLE (Looking around) ---
         const lookT = t * 0.2;
         const lookup = Math.sin(lookT * 2.1) * Math.cos(lookT * 0.9);
         const lookside = Math.cos(lookT * 1.5) * Math.sin(lookT * 1.1);
-        
-        // Random intervals of looking around
         const activeLook = Math.sin(t * 0.15) > 0.4;
         targetHeadX = activeLook ? lookup * 0.15 : Math.sin(t * 0.8) * 0.04;
         targetHeadY = activeLook ? lookside * 0.3 : Math.cos(t * 0.5) * 0.05;
-        
         targetLArmZ = Math.sin(t * 1.2) * 0.08;
         targetRArmZ = -Math.cos(t * 1.2) * 0.08;
         break;
@@ -202,8 +208,8 @@ const AnimationController = ({ avatarState = 'neutral', userRole = 'Student', ch
     transition.current.bodyScale = THREE.MathUtils.lerp(transition.current.bodyScale, targetBodyScale, lerpFactor);
 
     if (headGroup) {
-      headGroup.rotation.x = transition.current.headRotationX;
-      headGroup.rotation.y = transition.current.headRotationY;
+      headGroup.rotation.x = transition.current.headRotationX + transition.current.lookAtX;
+      headGroup.rotation.y = transition.current.headRotationY + transition.current.lookAtY;
     }
     
     groupRef.current.rotation.x = transition.current.bodyRotationX;

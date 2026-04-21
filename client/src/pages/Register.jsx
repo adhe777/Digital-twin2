@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import api from '../utils/api';
-import { Lock, Mail, User, Activity, ArrowRight, ShieldCheck, GraduationCap, Briefcase, UserCircle } from 'lucide-react';
+import { Lock, Mail, User, Activity, ArrowRight, ShieldCheck, GraduationCap, Briefcase, UserCircle, Eye, EyeOff } from 'lucide-react';
 
 const Register = ({ setAuth }) => {
     const [formData, setFormData] = useState({
@@ -13,6 +13,7 @@ const Register = ({ setAuth }) => {
     });
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
 
     const { name, email, password, role, gender } = formData;
@@ -106,13 +107,20 @@ const Register = ({ setAuth }) => {
                                         <Lock className="absolute top-1/2 -translate-y-1/2 left-[15px] w-5 h-5 text-slate-400/50 group-focus-within:text-[#4F8CFF] transition-colors" />
                                         <input
                                             name="password"
-                                            type="password"
+                                            type={showPassword ? "text" : "password"}
                                             required
-                                            className="input-modern"
+                                            className="input-modern pr-12"
                                             placeholder="••••••••"
                                             value={password}
                                             onChange={onChange}
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowPassword(!showPassword)}
+                                            className="absolute top-1/2 -translate-y-1/2 right-4 text-slate-400 hover:text-[#4F8CFF] transition-colors p-1"
+                                        >
+                                            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                                        </button>
                                     </div>
                                 </div>
                             </div>

@@ -30,6 +30,6 @@ app.use('/api/admin', require('./routes/admin'));
 
 app.get('/ping', (req, res) => res.send('pong'));
 
-const PORT = process.env.PORT || 5004;
+const PORT = process.env.PORT || 5604;
 
 app.listen(PORT, '0.0.0.0', () => console.log(`Server started on port ${PORT} at 0.0.0.0`));

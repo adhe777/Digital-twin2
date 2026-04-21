@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 
-const AdminDashboard = () => {
+const AdminDashboard = ({ currentUser }) => {
   const [users, setUsers] = useState([]);
   const [stats, setStats] = useState({
     totalUsers: 0,
@@ -64,8 +64,10 @@ const AdminDashboard = () => {
   };
 
   const filteredUsers = users.filter(user => 
-    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    user._id !== currentUser?._id && (
+      user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   if (loading) {
@@ -109,7 +111,7 @@ const AdminDashboard = () => {
           </div>
           <div>
             <p className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Total Users</p>
-            <h3 className="text-3xl font-black text-slate-900 dark:text-white">{stats.totalUsers}</h3>
+            <h3 className="text-3xl font-black text-slate-900 dark:text-white">{Math.max(0, stats.totalUsers - 1)}</h3>
           </div>
         </div>
 

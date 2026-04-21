@@ -9,6 +9,7 @@ import InputData from './pages/InputData';
 import Simulation from './pages/Simulation';
 import Profile from './pages/Profile';
 import AdminDashboard from './pages/AdminDashboard';
+import AIAssistant from './components/AIAssistant';
 import api from './utils/api';
 
 function App() {
@@ -77,13 +78,14 @@ function App() {
           <Routes>
             <Route path="/login" element={!isAuthenticated ? <Login setAuth={setIsAuthenticated} /> : <Navigate to="/" />} />
             <Route path="/register" element={!isAuthenticated ? <Register setAuth={setIsAuthenticated} /> : <Navigate to="/" />} />
-            <Route path="/" element={isAuthenticated ? <Dashboard /> : <Navigate to="/login" />} />
-            <Route path="/input" element={isAuthenticated ? <InputData /> : <Navigate to="/login" />} />
-            <Route path="/simulation" element={isAuthenticated ? <Simulation /> : <Navigate to="/login" />} />
-            <Route path="/profile" element={isAuthenticated ? <Profile /> : <Navigate to="/login" />} />
-            <Route path="/admin" element={isAuthenticated && user?.isAdmin ? <AdminDashboard /> : <Navigate to="/" />} />
+            <Route path="/" element={isAuthenticated ? (user?.isAdmin ? <Navigate to="/admin" /> : <Dashboard />) : <Navigate to="/login" />} />
+            <Route path="/input" element={isAuthenticated ? (user?.isAdmin ? <Navigate to="/admin" /> : <InputData />) : <Navigate to="/login" />} />
+            <Route path="/simulation" element={isAuthenticated ? (user?.isAdmin ? <Navigate to="/admin" /> : <Simulation />) : <Navigate to="/login" />} />
+            <Route path="/profile" element={isAuthenticated ? (user?.isAdmin ? <Navigate to="/admin" /> : <Profile />) : <Navigate to="/login" />} />
+            <Route path="/admin" element={isAuthenticated && user?.isAdmin ? <AdminDashboard currentUser={user} /> : <Navigate to="/" />} />
           </Routes>
         </div>
+        {isAuthenticated && !user?.isAdmin && <AIAssistant user={user} />}
       </div>
     </Router>
   );

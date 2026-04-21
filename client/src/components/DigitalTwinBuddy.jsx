@@ -16,10 +16,24 @@ const DigitalTwinBuddy = ({
   userRole = 'Student',
   gender = 'Male',
   fitnessStreak = 0,
+  streak = 0,
   goalCompleted = false,
   className = "" 
 }) => {
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isGreeting, setIsGreeting] = useState(true);
+
+  // Mouse tracking logic
+  useEffect(() => {
+    const handleMouseMove = (e) => {
+      // Normalize mouse coordinates (-1 to 1)
+      const x = (e.clientX / window.innerWidth) * 2 - 1;
+      const y = -(e.clientY / window.innerHeight) * 2 + 1;
+      setMousePos({ x, y });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
 
   // Greeting timer on mount
   useEffect(() => {
@@ -29,33 +43,28 @@ const DigitalTwinBuddy = ({
 
   // Digital Twin state logic (Refined Priority)
   const avatarState = useMemo(() => {
-    if (isGreeting) return 'waving';
     if (isTalking) return 'talking';
+    if (isGreeting) return 'waving';
     
     // 1. Victory (High Priority)
-    if (goalCompleted || productivityScore >= 90) return 'victory';
+    if (goalCompleted || productivityScore >= 90 || streak >= 3) return 'victory';
 
-    // 2. Workout Triggers (High Intensity overrides others)
+    // 2. Critical Needs (Burnout/Exhaustion)
     if (workoutEnabled && workoutIntensity === 'High') return 'exhausted';
-    if (workoutEnabled && workoutIntensity === 'Medium') return 'exercising';
+    if (sleepHours < 5) return 'sleepy';
+    if (mood <= 2) return 'tired';
 
-    // 3. Specialized States
+    // 3. Activity Based
+    if (workoutEnabled) return 'energetic';
     if (studyHours > 2 && productivityScore < 60) return 'thinking';
     if (sleepHours >= 7 && mood >= 4 && !workoutEnabled) return 'meditating';
 
-    // 4. Base Needs / Mood
-    if (sleepHours < 5) return 'sleepy';
-    if (mood <= 2) return 'tired';
-    
-    // 5. Workout Low Intensity / Fitness Streak
-    if (workoutEnabled) return 'energetic';
+    // 4. General Positive
+    if (productivityScore > 70 || streak > 0) return 'happy';
     if (fitnessStreak >= 7) return 'energetic';
-
-    // 6. General positive
-    if (productivityScore > 70) return 'happy';
     
     return 'neutral';
-  }, [sleepHours, productivityScore, isTalking, fitnessStreak, workoutEnabled, workoutIntensity, mood, studyHours, goalCompleted, isGreeting]);
+  }, [sleepHours, productivityScore, isTalking, fitnessStreak, streak, workoutEnabled, workoutIntensity, mood, studyHours, goalCompleted, isGreeting]);
 
   return (
     <div className={`relative w-full h-[320px] ${className}`}>
@@ -100,7 +109,11 @@ const DigitalTwinBuddy = ({
         <Suspense fallback={null}>
           <Environment preset="city" />
           
-          <AnimationController avatarState={avatarState} userRole={userRole}>
+          <AnimationController 
+            avatarState={avatarState} 
+            userRole={userRole}
+            mousePos={mousePos}
+          >
             <group scale={1.75} position={[0, -0.7, 0]}>
               <AvatarModel avatarState={avatarState} gender={gender} userRole={userRole} />
             </group>
@@ -125,33 +138,6 @@ const DigitalTwinBuddy = ({
           minPolarAngle={Math.PI / 2}
         />
       </Canvas>
-
-      {/* Surrounding Effects Overlays */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
-        {/* Sleepy ZZZs */}
-        {avatarState === 'sleepy' && (
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-32 h-32">
-            <span className="absolute top-0 right-0 text-2xl font-bold text-blue-400 animate-zzz" style={{ animationDelay: '0s' }}>Z</span>
-            <span className="absolute top-4 right-4 text-xl font-bold text-blue-300 animate-zzz" style={{ animationDelay: '0.5s' }}>Z</span>
-            <span className="absolute top-8 right-8 text-lg font-bold text-blue-200 animate-zzz" style={{ animationDelay: '1s' }}>Z</span>
-          </div>
-        )}
-
-        {/* Exhausted Sweat */}
-        {(avatarState === 'exhausted' || avatarState === 'exercising') && (
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-40 h-40">
-            <span className="absolute top-0 left-1/4 text-xl animate-sweat" style={{ animationDelay: '0s' }}>💧</span>
-            <span className="absolute top-4 right-1/4 text-lg animate-sweat" style={{ animationDelay: '0.7s' }}>💧</span>
-          </div>
-        )}
-
-        {/* Energetic Aura */}
-        {(avatarState === 'energetic' || avatarState === 'victory') && (
-          <div className="absolute inset-x-0 bottom-1/4 flex justify-center">
-            <div className="w-48 h-48 rounded-full bg-yellow-400/20 blur-3xl animate-fire-pulse" />
-          </div>
-        )}
-      </div>
     </div>
   );
 };

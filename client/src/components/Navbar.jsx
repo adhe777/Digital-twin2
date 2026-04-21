@@ -1,6 +1,8 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Activity, LayoutDashboard, LogOut, PlusCircle, BrainCircuit, Sun, Moon, User, Menu, X, ShieldCheck } from 'lucide-react';
+import { Activity, LayoutDashboard, LogOut, PlusCircle, BrainCircuit, Sun, Moon, User, Menu, X, ShieldCheck, Zap, RefreshCcw } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { getSimulatedDate, incrementSimulatedDay, resetSimulatedTime, isSimulating } from '../utils/timeSim';
+import toast from 'react-hot-toast';
 
 const Navbar = ({ isAuthenticated, user, onLogout, darkMode, toggleTheme }) => {
     const navigate = useNavigate();
@@ -19,16 +21,16 @@ const Navbar = ({ isAuthenticated, user, onLogout, darkMode, toggleTheme }) => {
         navigate('/login');
     };
 
-    const navLinks = [
-        { name: 'Dashboard', path: '/', icon: LayoutDashboard },
-        { name: 'Add Habits', path: '/input', icon: PlusCircle },
-        { name: 'Twin Vision', path: '/simulation', icon: BrainCircuit },
-        { name: 'Profile', path: '/profile', icon: User },
-    ];
-
-    if (user?.isAdmin) {
-        navLinks.push({ name: 'Admin', path: '/admin', icon: ShieldCheck });
-    }
+    const navLinks = user?.isAdmin 
+        ? [
+            { name: 'Admin', path: '/admin', icon: ShieldCheck }
+          ]
+        : [
+            { name: 'Dashboard', path: '/', icon: LayoutDashboard },
+            { name: 'Add Habits', path: '/input', icon: PlusCircle },
+            { name: 'Twin Vision', path: '/simulation', icon: BrainCircuit },
+            { name: 'Profile', path: '/profile', icon: User },
+        ];
 
     const isActive = (path) => location.pathname === path;
 
@@ -66,6 +68,33 @@ const Navbar = ({ isAuthenticated, user, onLogout, darkMode, toggleTheme }) => {
                     </div>
 
                     <div className="flex items-center gap-3">
+                        {isAuthenticated && (
+                            <div className="hidden lg:flex items-center gap-2 pr-4 border-r border-slate-200 dark:border-slate-700">
+                                {isSimulating() && (
+                                    <button
+                                        onClick={() => {
+                                            resetSimulatedTime();
+                                            window.location.reload();
+                                        }}
+                                        className="p-2.5 rounded-xl bg-rose-50 text-rose-500 hover:bg-rose-500 hover:text-white transition-all shadow-sm"
+                                        title="Reset Time to Reality"
+                                    >
+                                        <RefreshCcw className="w-5 h-5" />
+                                    </button>
+                                )}
+                                <button
+                                    onClick={() => {
+                                        incrementSimulatedDay();
+                                        toast.success(`Jumped to ${getSimulatedDate().toDateString()}`);
+                                        window.location.reload();
+                                    }}
+                                    className="flex items-center gap-2 px-4 py-2.5 bg-indigo-500 hover:bg-indigo-600 text-white rounded-xl text-xs font-black shadow-lg shadow-indigo-200 dark:shadow-none transition-all"
+                                >
+                                    <Zap className="w-4 h-4 fill-current" />
+                                    Next Day ⚡
+                                </button>
+                            </div>
+                        )}
                         <button
                             onClick={toggleTheme}
                             className="p-3 rounded-2xl text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-transparent hover:border-slate-200 dark:hover:border-slate-700"
